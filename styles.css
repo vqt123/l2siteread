@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+}
+
+/* PIANO STYLES */
+.piano-key {
+    transition: all 0.1s;
+    position: relative;
+    z-index: 1;
+}
+
+.piano-key:active, .piano-key.active {
+    transform: translateY(2px);
+}
+
+.white-key {
+    background: #ffffff;
+    height: 100%; /* Fill container height */
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1), inset 0 -5px 0 rgba(0,0,0,0.1);
+}
+
+.white-key:active, .white-key.active {
+    background: #f0f0f0;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+}
+
+.black-key {
+    background: #1f2937;
+    height: 60%;
+    width: 60%;
+    position: absolute;
+    top: 0;
+    left: 50%; 
+    z-index: 10;
+    border-radius: 0 0 4px 4px;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 -5px 0 rgba(255,255,255,0.1);
+    pointer-events: auto; /* Ensure clicks register */
+}
+
+.black-key:active, .black-key.active {
+    background: #000;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+}
+
+/* BUTTON MODE STYLES */
+.note-btn {
+    touch-action: manipulation;
+    transition: transform 0.1s, background-color 0.2s;
+}
+.note-btn:active {
+    transform: scale(0.95);
+}
+
+/* Animation for feedback */
+@keyframes flash-green {
+    0% { background-color: rgba(34, 197, 94, 0); }
+    50% { background-color: rgba(34, 197, 94, 0.2); }
+    100% { background-color: rgba(34, 197, 94, 0); }
+}
+@keyframes flash-orange {
+    0% { background-color: rgba(249, 115, 22, 0); }
+    50% { background-color: rgba(249, 115, 22, 0.2); }
+    100% { background-color: rgba(249, 115, 22, 0); }
+}
+@keyframes flash-red {
+    0% { background-color: rgba(239, 68, 68, 0); }
+    50% { background-color: rgba(239, 68, 68, 0.2); }
+    100% { background-color: rgba(239, 68, 68, 0); }
+}
+
+.feedback-correct { animation: flash-green 0.5s ease-out; }
+.feedback-slow { animation: flash-orange 0.5s ease-out; }
+.feedback-wrong { animation: flash-red 0.5s ease-out; }
+
+#notation-container canvas {
+    max-width: 100%;
+}
+
+.progression-bar {
+    transition: width 0.5s ease;
+}
+
