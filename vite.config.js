@@ -1,7 +1,4 @@
-import basicSsl from '@vitejs/plugin-basic-ssl'
-
 export default {
-  plugins: [basicSsl()],
   build: {
     rollupOptions: {
       input: 'index.html'
@@ -9,9 +6,12 @@ export default {
   },
   server: {
     open: false, // Don't automatically open browser
-    port: 3000,
+    port: 5174, // Changed from 3000 to avoid Cursor's auto-detection
     strictPort: true,
-    https: true // Enable HTTPS for microphone access
+    host: '127.0.0.1' // Bind to 127.0.0.1 instead of localhost to avoid IDE detection
+    // HTTPS is optional - localhost HTTP works for microphone access
+    // Uncomment below if you need HTTPS:
+    // https: true
   }
 }
 

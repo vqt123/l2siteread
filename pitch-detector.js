@@ -7,6 +7,7 @@ const PitchDetector = {
     audioContext: null,
     analyser: null,
     microphone: null,
+    mediaStream: null, // Store MediaStream reference for cleanup
     dataArray: null,
     isListening: false,
     onNoteDetected: null,
@@ -16,26 +17,23 @@ const PitchDetector = {
         try {
             // Check if getUserMedia is available
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                const errorMsg = 'getUserMedia is not supported. Are you using HTTPS or localhost?';
+                const errorMsg = 'getUserMedia is not supported in this browser.';
                 Logger.error('getUserMedia not available', { 
                     hasMediaDevices: !!navigator.mediaDevices,
                     protocol: window.location.protocol,
-                    hostname: window.location.hostname
-                });
-                throw new Error(errorMsg);
-            }
-
-            // Check if we're in a secure context
-            if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                const errorMsg = 'Microphone access requires HTTPS or localhost. Current URL: ' + window.location.href;
-                Logger.error('Not in secure context', { 
-                    isSecureContext: window.isSecureContext,
                     hostname: window.location.hostname,
-                    protocol: window.location.protocol
+                    isSecureContext: window.isSecureContext
                 });
                 throw new Error(errorMsg);
             }
 
+            // Note: Browsers allow localhost (127.0.0.1) over HTTP as a secure context exception
+            // We don't need to check isSecureContext - let the browser handle it
+            // If getUserMedia fails, it will throw an error we can catch below
+
+            // Clean up any existing stream/context first
+            this.cleanup();
+            
             // Get microphone access
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
@@ -44,6 +42,9 @@ const PitchDetector = {
                     autoGainControl: false
                 } 
             });
+            
+            // Store stream reference for cleanup
+            this.mediaStream = stream;
             
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.analyser = this.audioContext.createAnalyser();
@@ -382,13 +383,69 @@ const PitchDetector = {
     },
 
     cleanup: function() {
-        this.stopListening();
+        // If already cleaned up, skip
+        if (!this.mediaStream && !this.audioContext && !this.microphone) {
+            Logger.debug('Pitch detector already cleaned up, skipping');
+            return;
+        }
+        
+        try {
+            this.stopListening();
+        } catch (e) {
+            Logger.warn('Error stopping listening during cleanup', { error: e.message });
+        }
+        
+        // Stop all tracks in the media stream first
+        if (this.mediaStream) {
+            try {
+                this.mediaStream.getTracks().forEach(track => {
+                    try {
+                        if (track.readyState !== 'ended') {
+                            track.stop();
+                            Logger.debug('Stopped media stream track', { trackId: track.id, kind: track.kind });
+                        }
+                    } catch (e) {
+                        Logger.debug('Track already stopped or error stopping track', { trackId: track.id, error: e.message });
+                    }
+                });
+            } catch (e) {
+                Logger.warn('Error stopping media stream tracks', { error: e.message });
+            }
+            this.mediaStream = null;
+        }
+        
+        // Disconnect microphone node
         if (this.microphone) {
-            this.microphone.disconnect();
+            try {
+                this.microphone.disconnect();
+            } catch (e) {
+                // Already disconnected, ignore
+            }
+            this.microphone = null;
         }
+        
+        // Close audio context
         if (this.audioContext) {
-            this.audioContext.close();
+            try {
+                if (this.audioContext.state !== 'closed' && this.audioContext.state !== 'suspended') {
+                    this.audioContext.close().then(() => {
+                        Logger.debug('Audio context closed');
+                    }).catch(err => {
+                        Logger.warn('Error closing audio context', { error: err.message });
+                    });
+                }
+            } catch (e) {
+                Logger.warn('Error closing audio context', { error: e.message });
+            }
+            this.audioContext = null;
         }
+        
+        // Reset other state
+        this.analyser = null;
+        this.dataArray = null;
+        this.onNoteDetected = null;
+        
+        Logger.info('Pitch detector cleaned up');
     }
 };
 

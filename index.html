@@ -64,6 +64,7 @@
             <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg border border-slate-700">
                 <div id="mic-indicator" class="w-3 h-3 rounded-full bg-red-500"></div>
                 <span class="text-sm text-slate-300">Listening for notes...</span>
+                <div id="mic-detected-note" class="text-sm font-bold text-indigo-400 min-w-[60px]">--</div>
                 <button id="btn-stop-mic" class="text-xs text-red-400 hover:text-red-300">Stop</button>
             </div>
             
@@ -308,8 +309,8 @@
                         </label>
                         <div class="flex items-center gap-4">
                             <label class="text-sm text-slate-300">Tempo (BPM):</label>
-                            <input type="range" id="tempo-slider" min="40" max="200" value="120" class="flex-1 accent-indigo-500">
-                            <span id="tempo-display" class="text-white font-bold w-12 text-right">120</span>
+                            <input type="range" id="tempo-slider" min="40" max="200" value="60" class="flex-1 accent-indigo-500">
+                            <span id="tempo-display" class="text-white font-bold w-12 text-right">60</span>
                         </div>
                     </div>
                 </div>

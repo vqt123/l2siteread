@@ -1,0 +1,373 @@
+{
+  "timestamp": "2025-11-24T05:57:41.897Z",
+  "appLogs": [
+    {
+      "timestamp": "2025-11-24T05:57:33.683Z",
+      "level": "info",
+      "message": "SRS data loaded",
+      "data": {
+        "unlockedCount": 3,
+        "totalItems": 3,
+        "stats": {
+          "streak": 0,
+          "total": 19,
+          "correct": 8
+        }
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.687Z",
+      "level": "info",
+      "message": "App.init() called",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.687Z",
+      "level": "info",
+      "message": "App initialized",
+      "data": {
+        "unlockedCount": 3,
+        "settings": {
+          "clefs": [
+            "treble"
+          ],
+          "keys": [
+            "C"
+          ],
+          "mode": "microphone",
+          "batchSize": 8,
+          "metronomeEnabled": true,
+          "tempo": 40
+        }
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.688Z",
+      "level": "info",
+      "message": "Initial state for treble clef",
+      "data": {
+        "clef": "treble",
+        "unlocked": 3,
+        "noteStates": [
+          {
+            "note": "C4",
+            "id": "treble-C4",
+            "streak": 0,
+            "required": 20,
+            "ready": false,
+            "exists": true
+          },
+          {
+            "note": "D4",
+            "id": "treble-D4",
+            "streak": 0,
+            "required": 20,
+            "ready": false,
+            "exists": true
+          },
+          {
+            "note": "E4",
+            "id": "treble-E4",
+            "streak": 0,
+            "required": 20,
+            "ready": false,
+            "exists": false
+          }
+        ],
+        "allReady": false
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.688Z",
+      "level": "info",
+      "message": "Initial state for bass clef",
+      "data": {
+        "clef": "bass",
+        "unlocked": 3,
+        "noteStates": [
+          {
+            "note": "C3",
+            "id": "bass-C3",
+            "streak": 0,
+            "required": 20,
+            "ready": false,
+            "exists": false
+          },
+          {
+            "note": "B2",
+            "id": "bass-B2",
+            "streak": 0,
+            "required": 20,
+            "ready": false,
+            "exists": false
+          },
+          {
+            "note": "A2",
+            "id": "bass-A2",
+            "streak": 0,
+            "required": 20,
+            "ready": false,
+            "exists": false
+          }
+        ],
+        "allReady": false
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.688Z",
+      "level": "debug",
+      "message": "Starting new round",
+      "data": {
+        "unlockedCount": 3,
+        "batchSize": 8
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.688Z",
+      "level": "debug",
+      "message": "checkRegression called for clef: treble, currentUnlocked: 3",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.688Z",
+      "level": "debug",
+      "message": "At minimum unlocked count, cannot regress",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.688Z",
+      "level": "debug",
+      "message": "Generated sequence",
+      "data": {
+        "clef": "treble",
+        "key": "C",
+        "batchSize": 8,
+        "sequence": [
+          "D4",
+          "C4",
+          "C4",
+          "D4",
+          "C4",
+          "C4",
+          "C4",
+          "C4"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.690Z",
+      "level": "info",
+      "message": "App initialization complete",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.702Z",
+      "level": "warn",
+      "message": "Pitchfinder module loaded but YIN not available",
+      "data": {
+        "hasPitchFinder": false,
+        "hasYIN": false
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "error",
+      "message": "Algorithm not available",
+      "data": {
+        "algorithm": "pitchfinder-yin",
+        "available": [
+          "autocorrelation",
+          "pitchy"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "warn",
+      "message": "Falling back to autocorrelation algorithm",
+      "data": {
+        "requested": "pitchfinder-yin",
+        "fallback": "autocorrelation"
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "info",
+      "message": "Pitch detection algorithm changed",
+      "data": {
+        "algorithm": "autocorrelation",
+        "name": "Autocorrelation"
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "info",
+      "message": "Pitch detector adapter initialized",
+      "data": {
+        "algorithm": "autocorrelation"
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "error",
+      "message": "Algorithm not available",
+      "data": {
+        "algorithm": "pitchfinder-yin",
+        "available": [
+          "autocorrelation",
+          "pitchy"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "warn",
+      "message": "Falling back to autocorrelation algorithm",
+      "data": {
+        "requested": "pitchfinder-yin",
+        "fallback": "autocorrelation"
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "info",
+      "message": "Pitch detection algorithm changed",
+      "data": {
+        "algorithm": "autocorrelation",
+        "name": "Autocorrelation"
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "info",
+      "message": "Starting microphone with adapter",
+      "data": {
+        "algorithm": "pitchfinder-yin",
+        "implementationName": "Autocorrelation",
+        "availableAlgorithms": [
+          "autocorrelation",
+          "pitchy"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.704Z",
+      "level": "debug",
+      "message": "Pitch detector already cleaned up, skipping",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.819Z",
+      "level": "info",
+      "message": "Pitch detector initialized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.819Z",
+      "level": "info",
+      "message": "Microphone initialized successfully",
+      "data": {
+        "algorithm": "pitchfinder-yin",
+        "useAdapter": true,
+        "sampleRate": 48000
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.819Z",
+      "level": "info",
+      "message": "Started listening for pitch",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.819Z",
+      "level": "info",
+      "message": "Metronome tempo changed",
+      "data": {
+        "tempo": 40
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:33.820Z",
+      "level": "info",
+      "message": "Metronome started",
+      "data": {
+        "tempo": 40,
+        "beatsPerMeasure": 4
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:36.224Z",
+      "level": "warn",
+      "message": "Wrong answer for treble-D4 - streak reset",
+      "data": {
+        "cardId": "treble-D4",
+        "oldStreak": 0,
+        "newStreak": 0,
+        "wasReady": false,
+        "requiredStreak": 20
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:36.225Z",
+      "level": "debug",
+      "message": "checkRegression called for clef: treble, currentUnlocked: 3",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:36.225Z",
+      "level": "debug",
+      "message": "At minimum unlocked count, cannot regress",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:37.641Z",
+      "level": "warn",
+      "message": "Wrong answer for treble-D4 - streak reset",
+      "data": {
+        "cardId": "treble-D4",
+        "oldStreak": 0,
+        "newStreak": 0,
+        "wasReady": false,
+        "requiredStreak": 20
+      }
+    },
+    {
+      "timestamp": "2025-11-24T05:57:37.642Z",
+      "level": "debug",
+      "message": "checkRegression called for clef: treble, currentUnlocked: 3",
+      "data": null
+    },
+    {
+      "timestamp": "2025-11-24T05:57:37.642Z",
+      "level": "debug",
+      "message": "At minimum unlocked count, cannot regress",
+      "data": null
+    }
+  ],
+  "calibrationData": null,
+  "settings": {
+    "mode": "microphone",
+    "clefs": [
+      "treble"
+    ],
+    "keys": [
+      "C"
+    ],
+    "metronomeEnabled": true,
+    "tempo": 40,
+    "pitchDetectionAlgorithm": "pitchfinder-yin"
+  },
+  "systemInfo": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "sampleRate": 48000,
+    "isListening": true,
+    "isCalibrating": false,
+    "guidedCalibrationActive": false,
+    "adapterAvailable": true,
+    "currentAlgorithm": "autocorrelation",
+    "availableAlgorithms": [
+      "autocorrelation",
+      "pitchy"
+    ]
+  }
+}

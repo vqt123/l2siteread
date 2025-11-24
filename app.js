@@ -12,6 +12,8 @@ const App = {
     metronomeEnabled: false,
     nextBeatTime: 0, // When the next beat should occur
     beatMeterAnimation: null, // Animation frame ID for beat meter
+    beatMeterStartTime: 0, // When the beat meter animation started (for syncing)
+    lastAcceptedBeat: -1, // Track which beat we last accepted a note for (to prevent multiple accepts per beat)
     isCalibrating: false, // Whether calibration mode is active
     calibrationDetector: null, // Separate pitch detector for calibration
     guidedCalibration: {
@@ -34,11 +36,47 @@ const App = {
         mode: 'buttons',
         batchSize: 8,
         metronomeEnabled: false,
-        tempo: 120
+        tempo: 60
     },
 
     init: function() {
         Logger.info('App.init() called');
+        
+        // Clean up any existing microphone streams on page load/reload
+        // Only if they're actually active (don't force cleanup if nothing is running)
+        const isAdapterListening = typeof window !== 'undefined' && 
+            window.PitchDetectorAdapter && 
+            window.PitchDetectorAdapter.currentImplementation && 
+            window.PitchDetectorAdapter.currentImplementation.isListening;
+        
+        if (PitchDetector.isListening || isAdapterListening) {
+            Logger.info('Cleaning up existing microphone on init');
+            this.stopMicrophone();
+        } else if (typeof window !== 'undefined' && window.PitchDetectorAdapter) {
+            // Just ensure adapter is in a clean state, but don't force cleanup if not needed
+            try {
+                // Only cleanup if there's an active implementation
+                if (window.PitchDetectorAdapter.currentImplementation) {
+                    Logger.info('Cleaning up adapter on init');
+                    window.PitchDetectorAdapter.cleanup();
+                }
+            } catch (e) {
+                Logger.warn('Error cleaning up adapter on init', { error: e.message });
+            }
+        }
+        
+        // Clean up on page unload/reload
+        window.addEventListener('beforeunload', () => {
+            this.stopMicrophone();
+            if (typeof window !== 'undefined' && window.PitchDetectorAdapter) {
+                try {
+                    window.PitchDetectorAdapter.cleanup();
+                } catch (e) {
+                    // Ignore errors during unload
+                }
+            }
+        });
+        
         this.loadSettings();
         this.setupPiano();
         this.setupEventListeners();
@@ -107,7 +145,7 @@ const App = {
             document.querySelector(`input[name="input_mode"][value="buttons"]`).checked = true;
             this.settings.batchSize = 8;
             this.settings.metronomeEnabled = false;
-            this.settings.tempo = 120;
+            this.settings.tempo = 60;
         }
     },
 
@@ -170,11 +208,21 @@ const App = {
     },
 
     startMicrophone: async function() {
-        if (PitchDetector.isListening) return;
+        // Check if already listening (either direct or via adapter)
+        const isAdapterListening = typeof window !== 'undefined' && 
+            window.PitchDetectorAdapter && 
+            window.PitchDetectorAdapter.currentImplementation && 
+            window.PitchDetectorAdapter.currentImplementation.isListening;
+        
+        if (PitchDetector.isListening || isAdapterListening) {
+            Logger.warn('Microphone already listening, skipping start');
+            return;
+        }
         
         // Check if adapter is available, fallback to direct PitchDetector
         let detector = PitchDetector;
         let useAdapter = false;
+        let selectedAlgorithm = 'autocorrelation';
         
         if (typeof window !== 'undefined' && window.PitchDetectorAdapter) {
             try {
@@ -182,13 +230,57 @@ const App = {
                 if (!window.PitchDetectorAdapter.currentImplementation) {
                     await window.PitchDetectorAdapter.initialize();
                 }
+                // Get selected algorithm from localStorage
+                selectedAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+                
+                // Try to set the algorithm, fallback if it fails
+                const algorithmSet = window.PitchDetectorAdapter.setAlgorithm(selectedAlgorithm);
+                if (!algorithmSet) {
+                    Logger.error('Failed to set algorithm, falling back to autocorrelation', { 
+                        requested: selectedAlgorithm 
+                    });
+                    selectedAlgorithm = 'autocorrelation';
+                    window.PitchDetectorAdapter.setAlgorithm(selectedAlgorithm);
+                    // Update localStorage to reflect the fallback
+                    localStorage.setItem('pitchDetectionAlgorithm', 'autocorrelation');
+                }
+                
+                // Verify we have a valid implementation
+                if (!window.PitchDetectorAdapter.currentImplementation) {
+                    throw new Error('No valid pitch detection implementation available');
+                }
+                
                 detector = window.PitchDetectorAdapter;
                 useAdapter = true;
+                
+                Logger.info('Starting microphone with adapter', {
+                    algorithm: selectedAlgorithm,
+                    implementationName: window.PitchDetectorAdapter.currentImplementation?.name || 'unknown',
+                    availableAlgorithms: window.PitchDetectorAdapter.getAvailableAlgorithms().map(a => a.key)
+                });
             } catch (error) {
-                Logger.warn('Failed to initialize adapter, using direct PitchDetector', { error: error.message });
+                Logger.error('Failed to initialize adapter, using direct PitchDetector', { 
+                    error: error.message,
+                    stack: error.stack 
+                });
                 detector = PitchDetector;
                 useAdapter = false;
+                selectedAlgorithm = 'autocorrelation';
             }
+        } else {
+            Logger.info('Starting microphone with direct PitchDetector (adapter not available)');
+        }
+        
+        // Verify detector is valid before calling init
+        if (!detector || (useAdapter && !detector.currentImplementation)) {
+            const errorMsg = 'No valid pitch detection implementation available. Please refresh the page.';
+            Logger.error('Invalid detector state', { 
+                useAdapter, 
+                hasDetector: !!detector,
+                hasImplementation: useAdapter ? !!detector.currentImplementation : true
+            });
+            alert(errorMsg);
+            return;
         }
         
         const result = await detector.init();
@@ -196,54 +288,118 @@ const App = {
             const errorInfo = typeof result === 'object' && result.error ? result.error : { userMessage: 'Failed to access microphone. Please check permissions.' };
             const message = errorInfo.userMessage || errorInfo.error || 'Failed to access microphone. Please check permissions.';
             
-            Logger.error('Microphone access failed', errorInfo);
+            Logger.error('Microphone access failed', {
+                ...errorInfo,
+                algorithm: selectedAlgorithm,
+                useAdapter
+            });
             alert(message + '\n\nIf the issue persists, try:\n' +
-                '1. Using HTTPS (the dev server can be configured for this)\n' +
-                '2. Checking browser permissions (click padlock icon)\n' +
-                '3. Checking macOS System Preferences > Security & Privacy > Microphone\n' +
-                '4. Closing other apps that might be using the microphone');
+                '1. Checking browser permissions (click padlock icon in address bar)\n' +
+                '2. Checking macOS System Preferences > Security & Privacy > Microphone\n' +
+                '3. Closing other apps that might be using the microphone\n' +
+                '4. Refreshing the page and trying again');
             return;
         }
+        
+        Logger.info('Microphone initialized successfully', {
+            algorithm: selectedAlgorithm,
+            useAdapter,
+            sampleRate: detector.getSampleRate ? detector.getSampleRate() : 'unknown'
+        });
         
         // Reset detection state
         this.lastDetectedNote = null;
         this.lastDetectionTime = 0;
+        this.detectedNoteTimeout = null; // For clearing detected note display
+        
+        let detectionCount = 0;
         
         detector.startListening((note, frequency) => {
-            // Only process if we're not already processing
-            if (this.isProcessing) return;
-            
+            detectionCount++;
             const now = Date.now();
+            
+            // Only process if we're not already processing
+            if (this.isProcessing) {
+                return;
+            }
+            
             const noteKey = `${note.note}${note.octave}`;
+            
+            // Don't log every detection - too spammy
+            
+            // Update detected note display
+            const detectedNoteEl = document.getElementById('mic-detected-note');
+            if (detectedNoteEl) {
+                detectedNoteEl.textContent = `${note.note}${note.octave}`;
+                detectedNoteEl.classList.remove('text-slate-500');
+                detectedNoteEl.classList.add('text-indigo-400');
+                
+                // Clear after 2 seconds if no new detection
+                if (this.detectedNoteTimeout) {
+                    clearTimeout(this.detectedNoteTimeout);
+                }
+                this.detectedNoteTimeout = setTimeout(() => {
+                    const el = document.getElementById('mic-detected-note');
+                    if (el) {
+                        el.textContent = '--';
+                        el.classList.remove('text-indigo-400');
+                        el.classList.add('text-slate-500');
+                    }
+                }, 2000);
+            }
             
             // Debounce: ignore if same note detected within 300ms
             if (this.lastDetectedNote === noteKey && (now - this.lastDetectionTime) < 300) {
                 return;
             }
             
-            // If metronome is enabled, only accept notes near the beat
+            // If metronome is enabled, only accept notes when indicator is in green zone
             if (this.settings.metronomeEnabled && Metronome.isRunning) {
-                const beatInterval = (60 / this.settings.tempo) * 1000;
-                const timeUntilNextBeat = this.nextBeatTime - now;
-                const beatWindow = beatInterval * 0.4; // 40% of beat interval window (allows some flexibility)
+                const beatInterval = (60 / this.settings.tempo) * 1000; // At 60 BPM = 1000ms = 1 second
+                const fullCycleTime = beatInterval * 2; // 2 seconds for full cycle
                 
-                // Check if we're within the beat window (before the next beat)
-                // Allow notes slightly before the beat (up to 40% of interval) or right at the beat
-                const isNearBeat = timeUntilNextBeat >= -beatWindow && timeUntilNextBeat <= beatWindow;
+                // Calculate position using the same timing as the meter animation
+                // Use the same startTime that the meter uses
+                const elapsed = (now - this.beatMeterStartTime) % fullCycleTime;
+                const progress = elapsed / fullCycleTime; // Progress through 2-beat cycle (0 to 1)
                 
-                if (!isNearBeat) {
-                    Logger.debug('Note detected but not on beat', { 
-                        note: noteKey, 
-                        timeUntilNextBeat,
-                        beatWindow,
-                        nextBeatTime: this.nextBeatTime,
-                        now
-                    });
-                    return; // Ignore notes not on the beat
+                // Calculate meter position (same as meter animation)
+                let position;
+                if (progress < 0.5) {
+                    // First half: go from left (0) to right (1)
+                    position = progress * 2; // Maps 0->0.5 to 0->1
+                } else {
+                    // Second half: go from right (1) to left (0)
+                    position = 2 - (progress * 2); // Maps 0.5->1 to 1->0
                 }
+                
+                // Green zone is middle 25% (from 0.375 to 0.625)
+                const zoneCenter = 0.5;
+                const zoneWidth = 0.25; // 25% total width
+                const zoneStart = zoneCenter - zoneWidth / 2; // 0.375
+                const zoneEnd = zoneCenter + zoneWidth / 2; // 0.625
+                
+                // Check if indicator is in green zone
+                const isInGreenZone = position >= zoneStart && position <= zoneEnd;
+                
+                if (!isInGreenZone) {
+                    // Only log rejections occasionally to avoid spam
+                    return; // Ignore notes not in green zone
+                }
+                
+                // Calculate which beat we're in (0 or 1, since cycle is 2 beats)
+                const currentBeat = Math.floor(progress * 2);
+                
+                // Only accept one note per beat - if we already accepted a note for this beat, skip
+                if (this.lastAcceptedBeat === currentBeat) {
+                    return; // Already accepted a note for this beat
+                }
+                
+                // Mark that we've accepted a note for this beat
+                this.lastAcceptedBeat = currentBeat;
             }
             
-            Logger.debug('Note detected from microphone', { note, frequency });
+            // Don't log every processed note - too spammy
             
             // Convert detected note to input format
             const noteName = note.note.replace('#', '');
@@ -268,15 +424,37 @@ const App = {
             indicator.classList.remove('bg-red-500');
             indicator.classList.add('bg-green-500');
         }
+        
+        // Reset detected note display
+        const detectedNoteEl = document.getElementById('mic-detected-note');
+        if (detectedNoteEl) {
+            detectedNoteEl.textContent = '--';
+            detectedNoteEl.classList.remove('text-indigo-400');
+            detectedNoteEl.classList.add('text-slate-500');
+        }
     },
 
     stopMicrophone: function() {
-        if (PitchDetector.isListening) {
-            if (typeof window !== 'undefined' && window.PitchDetectorAdapter && window.PitchDetectorAdapter.currentImplementation) {
+        Logger.info('Stopping microphone');
+        
+        // Check if adapter is being used and stop it
+        const usingAdapter = typeof window !== 'undefined' && 
+            window.PitchDetectorAdapter && 
+            window.PitchDetectorAdapter.currentImplementation;
+        
+        if (usingAdapter) {
+            const isListening = window.PitchDetectorAdapter.currentImplementation.isListening;
+            Logger.info('Stopping adapter microphone', { 
+                isListening,
+                implementation: window.PitchDetectorAdapter.currentImplementation.name 
+            });
+            if (isListening) {
                 window.PitchDetectorAdapter.stopListening();
-            } else {
-                PitchDetector.stopListening();
             }
+            window.PitchDetectorAdapter.cleanup();
+        } else if (PitchDetector.isListening) {
+            Logger.info('Stopping direct PitchDetector microphone');
+            PitchDetector.stopListening();
             PitchDetector.cleanup();
         }
         
@@ -288,6 +466,20 @@ const App = {
             indicator.classList.remove('bg-green-500');
             indicator.classList.add('bg-red-500');
         }
+        
+        // Reset detected note display
+        const detectedNoteEl = document.getElementById('mic-detected-note');
+        if (detectedNoteEl) {
+            detectedNoteEl.textContent = '--';
+            detectedNoteEl.classList.remove('text-indigo-400');
+            detectedNoteEl.classList.add('text-slate-500');
+        }
+        
+        // Clear timeout if set
+        if (this.detectedNoteTimeout) {
+            clearTimeout(this.detectedNoteTimeout);
+            this.detectedNoteTimeout = null;
+        }
     },
 
     startMetronome: function() {
@@ -295,10 +487,19 @@ const App = {
         const beatInterval = (60 / this.settings.tempo) * 1000;
         this.nextBeatTime = Date.now() + beatInterval; // Set initial next beat time
         
+            // Don't log metronome start - too verbose
+        
         Metronome.start((beat) => {
             // Update next beat time based on current time and interval
             const beatInterval = (60 / this.settings.tempo) * 1000;
-            this.nextBeatTime = Date.now() + beatInterval;
+            const now = Date.now();
+            this.nextBeatTime = now + beatInterval;
+            
+            // Reset the accepted beat tracker on each metronome beat
+            // This allows a new note to be accepted for the new beat
+            this.lastAcceptedBeat = -1;
+            
+            // Don't log every beat - too spammy
             
             // Update visual indicator
             this.updateMetronomeVisual(beat);
@@ -355,19 +556,21 @@ const App = {
         if (!meter || !indicator || !zone) return;
         
         const meterWidth = meter.offsetWidth;
-        const beatInterval = (60 / this.settings.tempo) * 1000;
-        const windowPercent = 0.4; // 40% of beat interval is the acceptance window
+        const beatInterval = (60 / this.settings.tempo) * 1000; // At 60 BPM = 1000ms = 1 second per beat
+        const windowPercent = 0.25; // 25% of meter width (middle 25%, 12.5% on each side)
         
-        // Position and size acceptance zone (centered around beat)
+        // Position and size acceptance zone (centered around middle)
+        // Green zone is middle 25%: from 37.5% to 62.5% of meter
         const zoneCenter = 0.5; // Center of meter
-        const zoneWidth = windowPercent;
-        const zoneLeft = (zoneCenter - zoneWidth / 2) * meterWidth;
+        const zoneWidth = windowPercent; // 25% total width
+        const zoneLeft = (zoneCenter - zoneWidth / 2) * meterWidth; // 37.5% from left
         const zoneWidthPx = zoneWidth * meterWidth;
         
         zone.style.left = zoneLeft + 'px';
         zone.style.width = zoneWidthPx + 'px';
         
         let startTime = Date.now();
+        this.beatMeterStartTime = startTime; // Store for beat window calculation
         
         const animate = () => {
             if (!Metronome.isRunning) {
@@ -375,13 +578,23 @@ const App = {
                 return;
             }
             
-            const elapsed = (Date.now() - startTime) % beatInterval;
-            const progress = elapsed / beatInterval;
+            // Full cycle takes 2 beat intervals (2 seconds at 60 BPM)
+            // 1 second to go left to right, 1 second right to left
+            const fullCycleTime = beatInterval * 2; // 2 seconds at 60 BPM
+            const elapsed = (Date.now() - startTime) % fullCycleTime;
+            const progress = elapsed / fullCycleTime; // Progress through 2-beat cycle (0 to 1)
             
             // Calculate position (0 to 1, back and forth)
-            // Use sine wave for smooth back-and-forth motion
-            // Map to 0-1 range: sin gives -1 to 1, we want 0 to 1
-            const position = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5;
+            // We want: 0 (left) -> 1 (right) -> 0 (left) in 2 beat intervals
+            // Use a triangle wave: if progress < 0.5, go from 0 to 1; if progress >= 0.5, go from 1 to 0
+            let position;
+            if (progress < 0.5) {
+                // First half: go from left (0) to right (1)
+                position = progress * 2; // Maps 0->0.5 to 0->1
+            } else {
+                // Second half: go from right (1) to left (0)
+                position = 2 - (progress * 2); // Maps 0.5->1 to 1->0
+            }
             
             // Position indicator (accounting for indicator width)
             const indicatorWidth = 12; // 3 * 4 (w-3 = 12px)
@@ -604,9 +817,34 @@ const App = {
             }
         }
         
-        const success = await PitchDetectorAdapter.init();
-        if (!success) {
-            alert('Failed to access microphone. Please check permissions.');
+        // Initialize adapter with selected algorithm
+        let detector = PitchDetector;
+        let useAdapter = false;
+        
+        if (typeof window !== 'undefined' && window.PitchDetectorAdapter) {
+            try {
+                // Initialize adapter if not already done
+                if (!window.PitchDetectorAdapter.currentImplementation) {
+                    await window.PitchDetectorAdapter.initialize();
+                }
+                // Get selected algorithm from localStorage
+                const selectedAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+                window.PitchDetectorAdapter.setAlgorithm(selectedAlgorithm);
+                detector = window.PitchDetectorAdapter;
+                useAdapter = true;
+                Logger.info('Calibration using adapter', { algorithm: selectedAlgorithm });
+            } catch (error) {
+                Logger.warn('Failed to initialize adapter for calibration, using direct PitchDetector', { error: error.message });
+                detector = PitchDetector;
+                useAdapter = false;
+            }
+        }
+        
+        const result = await detector.init();
+        if (!result || (typeof result === 'object' && !result.success)) {
+            const errorInfo = typeof result === 'object' && result.error ? result.error : { userMessage: 'Failed to access microphone. Please check permissions.' };
+            const message = errorInfo.userMessage || errorInfo.error || 'Failed to access microphone. Please check permissions.';
+            alert(message);
             // Restore microphone if it was running
             if (wasMicRunning) {
                 this.startMicrophone();
@@ -624,33 +862,50 @@ const App = {
         document.getElementById('btn-start-calibration').textContent = 'Stop Calibration';
         document.getElementById('cal-history').innerHTML = '<div class="text-xs text-slate-500 text-center">No detections yet</div>';
         
+        // Get audio context and analyser from the detector (adapter or direct)
+        const currentImpl = useAdapter ? detector.currentImplementation : detector;
+        const analyser = currentImpl.analyser;
+        const dataArray = currentImpl.dataArray;
+        const audioContext = currentImpl.audioContext;
+        const sampleRate = audioContext ? audioContext.sampleRate : 44100;
+        
         // Create separate detector for calibration (doesn't interfere with main app)
-        const detector = {
-            analyser: PitchDetector.analyser,
-            dataArray: PitchDetector.dataArray,
-            audioContext: PitchDetector.audioContext,
+        const calibrationDetector = {
+            analyser: analyser,
+            dataArray: dataArray,
+            audioContext: audioContext,
             isRunning: true,
-            animationFrame: null
+            animationFrame: null,
+            useAdapter: useAdapter,
+            detector: detector,
+            currentImpl: currentImpl
         };
         
         const detectPitch = () => {
             if (!this.isCalibrating) return;
             
-            detector.analyser.getFloatTimeDomainData(detector.dataArray);
+            calibrationDetector.analyser.getFloatTimeDomainData(calibrationDetector.dataArray);
             
             // Calculate signal strength (RMS)
             let sum = 0;
-            for (let i = 0; i < detector.dataArray.length; i++) {
-                sum += detector.dataArray[i] * detector.dataArray[i];
+            for (let i = 0; i < calibrationDetector.dataArray.length; i++) {
+                sum += calibrationDetector.dataArray[i] * calibrationDetector.dataArray[i];
             }
-            const rms = Math.sqrt(sum / detector.dataArray.length);
+            const rms = Math.sqrt(sum / calibrationDetector.dataArray.length);
             const signalStrength = Math.min(100, (rms * 1000)); // Scale to 0-100
             
             // Update signal strength bar
             document.getElementById('cal-signal-bar').style.width = signalStrength + '%';
             
-            // Detect pitch
-            const pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+            // Detect pitch using the selected algorithm
+            let pitch = -1;
+            if (useAdapter && calibrationDetector.currentImpl && calibrationDetector.currentImpl.detector) {
+                // Use adapter's detector function (for pitchfinder implementations)
+                pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
+            } else if (PitchDetector.autocorrelate) {
+                // Fallback to autocorrelation
+                pitch = PitchDetector.autocorrelate(calibrationDetector.dataArray, sampleRate);
+            }
             
             if (pitch > 0 && signalStrength > 5) { // Minimum signal threshold
                 const note = PitchDetector.frequencyToNote(pitch);
@@ -695,11 +950,11 @@ const App = {
                 }
             }
             
-            detector.animationFrame = requestAnimationFrame(detectPitch);
+            calibrationDetector.animationFrame = requestAnimationFrame(detectPitch);
         };
         
         detectPitch();
-        this.calibrationDetector = detector;
+        this.calibrationDetector = calibrationDetector;
         
         Logger.info('Calibration mode started');
     },
@@ -740,9 +995,34 @@ const App = {
             }
         }
         
-        const success = await PitchDetectorAdapter.init();
-        if (!success) {
-            alert('Failed to access microphone. Please check permissions.');
+        // Initialize adapter with selected algorithm
+        let detector = PitchDetector;
+        let useAdapter = false;
+        
+        if (typeof window !== 'undefined' && window.PitchDetectorAdapter) {
+            try {
+                // Initialize adapter if not already done
+                if (!window.PitchDetectorAdapter.currentImplementation) {
+                    await window.PitchDetectorAdapter.initialize();
+                }
+                // Get selected algorithm from localStorage
+                const selectedAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+                window.PitchDetectorAdapter.setAlgorithm(selectedAlgorithm);
+                detector = window.PitchDetectorAdapter;
+                useAdapter = true;
+                Logger.info('Guided calibration using adapter', { algorithm: selectedAlgorithm });
+            } catch (error) {
+                Logger.warn('Failed to initialize adapter for guided calibration, using direct PitchDetector', { error: error.message });
+                detector = PitchDetector;
+                useAdapter = false;
+            }
+        }
+        
+        const result = await detector.init();
+        if (!result || (typeof result === 'object' && !result.success)) {
+            const errorInfo = typeof result === 'object' && result.error ? result.error : { userMessage: 'Failed to access microphone. Please check permissions.' };
+            const message = errorInfo.userMessage || errorInfo.error || 'Failed to access microphone. Please check permissions.';
+            alert(message);
             return;
         }
         
@@ -758,70 +1038,59 @@ const App = {
         document.getElementById('btn-export-cal-logs').classList.add('hidden'); // Hide until stopped
         this.updateGuidedCalibrationUI();
         
+        // Get audio context and analyser from the detector (adapter or direct)
+        const currentImpl = useAdapter ? detector.currentImplementation : detector;
+        const analyser = currentImpl.analyser;
+        const dataArray = currentImpl.dataArray;
+        const audioContext = currentImpl.audioContext;
+        const sampleRate = audioContext ? audioContext.sampleRate : 44100;
+        
         // Create detector for guided calibration
-        // For calibration, we'll use the adapter but need direct access to audio data
-        // We'll create a custom callback that processes the audio buffer
-        const detector = {
+        const calibrationDetector = {
             isRunning: true,
             animationFrame: null,
             lastDetection: null,
             detectionCount: 0,
             detections: [],
-            analyser: null,
-            dataArray: null,
-            audioContext: null
+            analyser: analyser,
+            dataArray: dataArray,
+            audioContext: audioContext,
+            useAdapter: useAdapter,
+            detector: detector,
+            currentImpl: currentImpl
         };
         
-        // Get audio context from adapter's current implementation
-        // For autocorrelation, we can access directly; for others, we'll use the callback
-        const currentImpl = PitchDetectorAdapter.currentImplementation;
-        if (currentImpl && currentImpl.audioContext) {
-            detector.analyser = currentImpl.analyser;
-            detector.dataArray = currentImpl.dataArray;
-            detector.audioContext = currentImpl.audioContext;
-        } else if (PitchDetector.audioContext) {
-            // Fallback to original PitchDetector
-            detector.analyser = PitchDetector.analyser;
-            detector.dataArray = PitchDetector.dataArray;
-            detector.audioContext = PitchDetector.audioContext;
-        }
-        
         // Initialize detector state
-        detector.currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
-        detector.stringStartTime = Date.now();
+        calibrationDetector.currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+        calibrationDetector.stringStartTime = Date.now();
         
         const detectPitch = () => {
-            if (!this.guidedCalibration.active || !detector.analyser) return;
+            if (!this.guidedCalibration.active || !calibrationDetector.analyser) return;
             
             // Get current string from index (in case it changed)
             const currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
             
-            detector.analyser.getFloatTimeDomainData(detector.dataArray);
+            calibrationDetector.analyser.getFloatTimeDomainData(calibrationDetector.dataArray);
             
             // Calculate signal strength
             let sum = 0;
-            for (let i = 0; i < detector.dataArray.length; i++) {
-                sum += detector.dataArray[i] * detector.dataArray[i];
+            for (let i = 0; i < calibrationDetector.dataArray.length; i++) {
+                sum += calibrationDetector.dataArray[i] * calibrationDetector.dataArray[i];
             }
-            const rms = Math.sqrt(sum / detector.dataArray.length);
+            const rms = Math.sqrt(sum / calibrationDetector.dataArray.length);
             const signalStrength = Math.min(100, (rms * 1000));
             
             // Update signal strength display
             document.getElementById('cal-guided-signal-bar').style.width = signalStrength + '%';
             
-            // Detect pitch - use adapter's current implementation or fallback to autocorrelation
+            // Detect pitch using the selected algorithm
             let pitch = -1;
-            if (PitchDetectorAdapter && PitchDetectorAdapter.config.algorithm === 'autocorrelation' && PitchDetector.autocorrelate) {
-                pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
-            } else if (currentImpl && currentImpl.detector) {
-                // For Pitchfinder implementations
-                pitch = currentImpl.detector(detector.dataArray);
-            } else if (typeof Pitchy !== 'undefined' && Pitchy.detectPitch) {
-                // For Pitchy
-                pitch = Pitchy.detectPitch(detector.dataArray, detector.audioContext.sampleRate);
+            if (useAdapter && calibrationDetector.currentImpl && calibrationDetector.currentImpl.detector) {
+                // Use adapter's detector function (for pitchfinder implementations)
+                pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
             } else if (PitchDetector.autocorrelate) {
                 // Fallback to autocorrelation
-                pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+                pitch = PitchDetector.autocorrelate(calibrationDetector.dataArray, sampleRate);
             }
             
             // Lower signal threshold and be more lenient with detections
@@ -838,7 +1107,7 @@ const App = {
                     document.getElementById('cal-guided-detected-note').innerHTML = `<span class="${colorClass}">${noteDisplay}</span>`;
                     document.getElementById('cal-guided-frequency').textContent = pitch.toFixed(1);
                     
-                    const elapsed = Date.now() - (detector.stringStartTime || Date.now());
+                    const elapsed = Date.now() - (calibrationDetector.stringStartTime || Date.now());
                     
                     // Record detection
                     const detection = {
@@ -855,7 +1124,7 @@ const App = {
                     
                     // Only add if it's a new detection (avoid duplicates)
                     // But be less strict - allow same note if frequency changed significantly or enough time passed
-                    const lastDetection = detector.detections[detector.detections.length - 1];
+                    const lastDetection = calibrationDetector.detections[calibrationDetector.detections.length - 1];
                     const timeSinceLastDetection = lastDetection ? (elapsed - lastDetection.timestamp) : Infinity;
                     
                     if (!lastDetection || 
@@ -863,7 +1132,7 @@ const App = {
                         lastDetection.detectedOctave !== note.octave ||
                         Math.abs(lastDetection.detectedFrequency - pitch) > 3 || // Lowered from 5
                         timeSinceLastDetection > 500) { // Allow same note if 500ms passed
-                        detector.detections.push(detection);
+                        calibrationDetector.detections.push(detection);
                         
                         // Log to calibration session log (concise)
                         this.guidedCalibration.sessionLog.push({
@@ -880,9 +1149,9 @@ const App = {
                     
                     // Count consecutive matches
                     if (match) {
-                        detector.detectionCount++;
+                        calibrationDetector.detectionCount++;
                     } else {
-                        detector.detectionCount = 0; // Reset on mismatch
+                        calibrationDetector.detectionCount = 0; // Reset on mismatch
                     }
                 }
             } else {
@@ -897,11 +1166,11 @@ const App = {
                 }
             }
             
-            detector.animationFrame = requestAnimationFrame(detectPitch);
+            calibrationDetector.animationFrame = requestAnimationFrame(detectPitch);
         };
         
         detectPitch();
-        this.calibrationDetector = detector;
+        this.calibrationDetector = calibrationDetector;
         
         const initialString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
         Logger.info('Guided calibration started', { string: initialString.name });
@@ -1281,31 +1550,43 @@ const App = {
                 clefs: this.settings.clefs,
                 keys: this.settings.keys,
                 metronomeEnabled: this.settings.metronomeEnabled,
-                tempo: this.settings.tempo
+                tempo: this.settings.tempo,
+                pitchDetectionAlgorithm: localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation'
             },
             systemInfo: {
                 userAgent: navigator.userAgent,
                 sampleRate: PitchDetector.audioContext ? PitchDetector.audioContext.sampleRate : 'not initialized',
                 isListening: PitchDetector.isListening,
                 isCalibrating: this.isCalibrating,
-                guidedCalibrationActive: this.guidedCalibration.active
+                guidedCalibrationActive: this.guidedCalibration.active,
+                adapterAvailable: typeof window !== 'undefined' && !!window.PitchDetectorAdapter,
+                currentAlgorithm: typeof window !== 'undefined' && window.PitchDetectorAdapter ? 
+                    (window.PitchDetectorAdapter.config?.algorithm || 'unknown') : 'autocorrelation',
+                availableAlgorithms: typeof window !== 'undefined' && window.PitchDetectorAdapter ?
+                    window.PitchDetectorAdapter.getAvailableAlgorithms().map(a => a.key) : []
             }
         };
         
         const logText = JSON.stringify(exportData, null, 2);
         
-        // Create and download file
-        const blob = new Blob([logText], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `sightread-debug-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        Logger.info('All logs exported');
+        // Copy to clipboard
+        navigator.clipboard.writeText(logText).then(() => {
+            Logger.info('All logs copied to clipboard');
+            alert('Logs copied to clipboard! You can paste them anywhere.');
+        }).catch(err => {
+            Logger.error('Failed to copy to clipboard', { error: err.message });
+            // Fallback to download
+            const blob = new Blob([logText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sightread-debug-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Logs downloaded (clipboard copy failed)');
+        });
     },
 
     exportCalibrationSessionLogs: function() {
@@ -1399,18 +1680,25 @@ const App = {
             detections: this.guidedCalibration.sessionLog.length
         });
         
-        // Create and download file
+        // Copy to clipboard
         try {
-            const blob = new Blob([logText], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `calibration-session-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            console.log('File download initiated');
+            navigator.clipboard.writeText(logText).then(() => {
+                Logger.info('Calibration session logs copied to clipboard');
+                alert('Calibration logs copied to clipboard! You can paste them anywhere.');
+            }).catch(err => {
+                Logger.error('Failed to copy to clipboard', { error: err.message });
+                // Fallback to download
+                const blob = new Blob([logText], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `calibration-session-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert('Logs downloaded (clipboard copy failed)');
+            });
         } catch (error) {
             console.error('Error exporting logs:', error);
             alert('Error exporting logs: ' + error.message);
@@ -1450,11 +1738,32 @@ const App = {
 
         this.renderSequence();
         this.lastNoteTime = Date.now(); // Start timer for first note
+        this.updateHintText(); // Update hint to show current note
         
         // Reset next beat time for metronome
         if (this.settings.mode === 'microphone' && this.settings.metronomeEnabled && Metronome.isRunning) {
             this.nextBeatTime = Date.now() + (60 / this.settings.tempo) * 1000;
         }
+    },
+    
+    updateHintText: function() {
+        const hintEl = document.getElementById('hint-text');
+        if (!hintEl) return;
+        
+        if (this.currentSequence.length === 0 || this.sequenceIndex >= this.currentSequence.length) {
+            hintEl.textContent = 'Speed goal: < 2.5s';
+            return;
+        }
+        
+        const targetCard = this.currentSequence[this.sequenceIndex];
+        if (!targetCard) {
+            hintEl.textContent = 'Speed goal: < 2.5s';
+            return;
+        }
+        
+        const noteName = targetCard.note + (targetCard.accidental || '');
+        const noteDisplay = `${noteName}${targetCard.octave}`;
+        hintEl.innerHTML = `Play: <span class="text-indigo-400 font-bold text-base">${noteDisplay}</span> (${targetCard.clef} clef)`;
     },
 
     renderSequence: function() {
@@ -1560,6 +1869,7 @@ const App = {
             const resultType = this.srs.recordResult(targetCard.id, true, delta);
             this.sequenceIndex++;
             this.lastNoteTime = Date.now(); // Reset timer for next note
+            this.updateHintText(); // Update hint for next note
             
             // Advance metronome beat when correct note is played
             if (this.settings.metronomeEnabled && Metronome.isRunning) {
@@ -1585,6 +1895,20 @@ const App = {
         } else {
             this.srs.recordResult(targetCard.id, false, delta);
             this.flashFeedback('wrong');
+            
+            // Show what was detected vs what was expected
+            const hintEl = document.getElementById('hint-text');
+            if (hintEl && targetCard) {
+                const expectedNote = targetCard.note + (targetCard.accidental || '') + targetCard.octave;
+                const detectedNote = note + (accidental || '') + octave;
+                hintEl.innerHTML = `Expected: <span class="text-indigo-400 font-bold">${expectedNote}</span> | Detected: <span class="text-red-400">${detectedNote}</span>`;
+                
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    this.updateHintText();
+                }, 3000);
+            }
+            
             // Check for regression after wrong answers
             this.settings.clefs.forEach(c => this.srs.checkRegression(c));
         }
