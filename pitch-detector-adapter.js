@@ -386,6 +386,21 @@ const PitchDetectorAdapter = {
                     this.animationFrame = null;
                 }
             },
+            get detector() {
+                // Return a function that wraps Pitchy's detectPitch method
+                return (buffer, sampleRate) => {
+                    if (!this.pitchyDetector || !this.audioContext) {
+                        return -1;
+                    }
+                    try {
+                        const pitch = this.pitchyDetector.detectPitch(buffer, sampleRate || this.audioContext.sampleRate);
+                        return pitch && pitch > 0 ? pitch : -1;
+                    } catch (e) {
+                        Logger.warn('Error calling Pitchy detector', { error: e.message });
+                        return -1;
+                    }
+                };
+            },
             cleanup: function() {
                 // If already cleaned up, skip
                 if (!this.mediaStream && !this.audioContext && !this.microphone) {

@@ -1,0 +1,4263 @@
+{
+  "timestamp": "2025-11-24T07:00:49.841Z",
+  "sessionSummary": {
+    "totalDetections": 321,
+    "accuracyByString": {
+      "E (6th string)": {
+        "accuracy": 11.11,
+        "correct": 1,
+        "total": 9
+      },
+      "A (5th string)": {
+        "accuracy": 60,
+        "correct": 3,
+        "total": 5
+      },
+      "D (4th string)": {
+        "accuracy": 49.68,
+        "correct": 78,
+        "total": 157
+      },
+      "G (3rd string)": {
+        "accuracy": 42.42,
+        "correct": 14,
+        "total": 33
+      },
+      "B (2nd string)": {
+        "accuracy": 44.12,
+        "correct": 15,
+        "total": 34
+      },
+      "E (1st string)": {
+        "accuracy": 18.07,
+        "correct": 15,
+        "total": 83
+      }
+    }
+  },
+  "detections": [
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "G3 (200.84Hz)",
+      "match": false,
+      "signalStrength": 18.28
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "E2 (82.05Hz)",
+      "match": true,
+      "signalStrength": 20.86
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A#3 (228.57Hz)",
+      "match": false,
+      "signalStrength": 36.98
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A3 (226.42Hz)",
+      "match": false,
+      "signalStrength": 53.32
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A3 (223.26Hz)",
+      "match": false,
+      "signalStrength": 88.59
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A2 (110.85Hz)",
+      "match": false,
+      "signalStrength": 100
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 19.64
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A3 (222.22Hz)",
+      "match": false,
+      "signalStrength": 31.4
+    },
+    {
+      "string": "E (6th string)",
+      "expected": "E2 (82.41Hz)",
+      "detected": "A2 (111.11Hz)",
+      "match": false,
+      "signalStrength": 21.47
+    },
+    {
+      "string": "A (5th string)",
+      "expected": "A2 (110Hz)",
+      "detected": "A#3 (229.67Hz)",
+      "match": false,
+      "signalStrength": 25.74
+    },
+    {
+      "string": "A (5th string)",
+      "expected": "A2 (110Hz)",
+      "detected": "A2 (111.89Hz)",
+      "match": true,
+      "signalStrength": 36.5
+    },
+    {
+      "string": "A (5th string)",
+      "expected": "A2 (110Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": true,
+      "signalStrength": 16.05
+    },
+    {
+      "string": "A (5th string)",
+      "expected": "A2 (110Hz)",
+      "detected": "A3 (222.22Hz)",
+      "match": false,
+      "signalStrength": 27.09
+    },
+    {
+      "string": "A (5th string)",
+      "expected": "A2 (110Hz)",
+      "detected": "A2 (109.84Hz)",
+      "match": true,
+      "signalStrength": 26.17
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "F#3 (180.45Hz)",
+      "match": false,
+      "signalStrength": 17.39
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (145.9Hz)",
+      "match": true,
+      "signalStrength": 20.05
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (72.51Hz)",
+      "match": false,
+      "signalStrength": 25.29
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 31.97
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 32.58
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 32.53
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 32.79
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 32.13
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 32.32
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 32.2
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 31.86
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 31.08
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 30.7
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 30.28
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 30.55
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 29.69
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 30.1
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 29.41
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 29.35
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 28.54
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 28.71
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 28.61
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 28.02
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 27.5
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 27.18
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 26.91
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 26.84
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 26.44
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 26.72
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 26.08
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 26.04
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 25.52
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 25.29
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 24.76
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 25.24
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 24.64
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 24.7
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 23.77
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 24.07
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 23.16
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 23.25
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 22.62
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 22.87
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 22.49
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 22.95
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 21.7
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 21.82
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 21.38
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 21.51
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 20.64
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 20.9
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.69Hz)",
+      "match": true,
+      "signalStrength": 20.22
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 19.98
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 19.56
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 19.82
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 19.54
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 19.29
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 18.84
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 18.66
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 18.03
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 18.06
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 17.72
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 17.79
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.69Hz)",
+      "match": true,
+      "signalStrength": 17.48
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "F#3 (179.78Hz)",
+      "match": false,
+      "signalStrength": 16.41
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (144.14Hz)",
+      "match": true,
+      "signalStrength": 23.64
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (72.62Hz)",
+      "match": false,
+      "signalStrength": 25.64
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 33.51
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 33.74
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 33.68
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 34.21
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 33.97
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 34.33
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 33.62
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 33.81
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 33.02
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 33.61
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 32.69
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 32.24
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 32.31
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 31.72
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 30.78
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 31.22
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 30.25
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 30.5
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 29.92
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 29.84
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 29.12
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 29.17
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 28.09
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 28.69
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 28.15
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 27.94
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 27.41
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 27.29
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 26.74
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 26.83
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 26.06
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 26.29
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 25.3
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.73Hz)",
+      "match": false,
+      "signalStrength": 25.7
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 25.06
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 25.16
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 24
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 24.04
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.69Hz)",
+      "match": true,
+      "signalStrength": 23.55
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 23.79
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 22.81
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 23.33
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 22.35
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 22.69
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.69Hz)",
+      "match": true,
+      "signalStrength": 22.45
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 22.56
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 21.81
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 22.21
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 21.62
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 21.7
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 21
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 21.34
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 20.93
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 21.11
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 20.65
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 20.66
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 20.17
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 20.39
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 20.15
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 20.23
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 19.52
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 19.82
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 19.51
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 19.58
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 18.99
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 19.19
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 18.73
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 19
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 18.35
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 18.56
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 18.1
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 18.35
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 17.8
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 18
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 17.57
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 17.77
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 17.36
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 17.43
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 17.35
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 17.49
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 17.03
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 17.08
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (146.79Hz)",
+      "match": true,
+      "signalStrength": 16.66
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.51Hz)",
+      "match": false,
+      "signalStrength": 16.97
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 16.47
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 16.55
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 16.02
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 16.23
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D3 (147.24Hz)",
+      "match": true,
+      "signalStrength": 16.15
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3 (146.83Hz)",
+      "detected": "D2 (73.62Hz)",
+      "match": false,
+      "signalStrength": 16
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G#3 (202.53Hz)",
+      "match": false,
+      "signalStrength": 22.21
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G#3 (208.7Hz)",
+      "match": false,
+      "signalStrength": 63.28
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G#3 (203.39Hz)",
+      "match": false,
+      "signalStrength": 94.88
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (200.84Hz)",
+      "match": true,
+      "signalStrength": 100
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (196.72Hz)",
+      "match": true,
+      "signalStrength": 99.26
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "C2 (64.26Hz)",
+      "match": false,
+      "signalStrength": 90.67
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.12Hz)",
+      "match": true,
+      "signalStrength": 90.81
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.16Hz)",
+      "match": false,
+      "signalStrength": 93.65
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.92Hz)",
+      "match": true,
+      "signalStrength": 87.23
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.56Hz)",
+      "match": false,
+      "signalStrength": 73.67
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (197.53Hz)",
+      "match": true,
+      "signalStrength": 68.63
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.56Hz)",
+      "match": false,
+      "signalStrength": 58.79
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (197.53Hz)",
+      "match": true,
+      "signalStrength": 57.35
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.36Hz)",
+      "match": false,
+      "signalStrength": 52.55
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.92Hz)",
+      "match": true,
+      "signalStrength": 51.63
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.16Hz)",
+      "match": false,
+      "signalStrength": 46.49
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.92Hz)",
+      "match": true,
+      "signalStrength": 44.43
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.36Hz)",
+      "match": false,
+      "signalStrength": 39.88
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (196.72Hz)",
+      "match": true,
+      "signalStrength": 38.69
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "C2 (65.31Hz)",
+      "match": false,
+      "signalStrength": 35.82
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.16Hz)",
+      "match": false,
+      "signalStrength": 33.74
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (196.72Hz)",
+      "match": true,
+      "signalStrength": 32.89
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.16Hz)",
+      "match": false,
+      "signalStrength": 29.84
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.92Hz)",
+      "match": true,
+      "signalStrength": 29.11
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.36Hz)",
+      "match": false,
+      "signalStrength": 26.11
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "C2 (65.31Hz)",
+      "match": false,
+      "signalStrength": 25.19
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (98.16Hz)",
+      "match": false,
+      "signalStrength": 22.97
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.92Hz)",
+      "match": true,
+      "signalStrength": 21.57
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "C2 (65.31Hz)",
+      "match": false,
+      "signalStrength": 20.46
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G2 (97.96Hz)",
+      "match": false,
+      "signalStrength": 19.95
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (195.92Hz)",
+      "match": true,
+      "signalStrength": 19.38
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "C2 (65.4Hz)",
+      "match": false,
+      "signalStrength": 18.56
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3 (196Hz)",
+      "detected": "G3 (196.72Hz)",
+      "match": true,
+      "signalStrength": 16.25
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "C4 (259.46Hz)",
+      "match": false,
+      "signalStrength": 20.99
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "A#3 (237.62Hz)",
+      "match": false,
+      "signalStrength": 49.99
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (240Hz)",
+      "match": true,
+      "signalStrength": 100
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (244.9Hz)",
+      "match": true,
+      "signalStrength": 77.26
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (248.7Hz)",
+      "match": true,
+      "signalStrength": 66.79
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.71Hz)",
+      "match": false,
+      "signalStrength": 47.76
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (246.15Hz)",
+      "match": true,
+      "signalStrength": 47.69
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.39Hz)",
+      "match": false,
+      "signalStrength": 36.47
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (246.15Hz)",
+      "match": true,
+      "signalStrength": 37.03
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.71Hz)",
+      "match": false,
+      "signalStrength": 29.49
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 29.49
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 26.92
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 27.06
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.71Hz)",
+      "match": false,
+      "signalStrength": 25.15
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 24.6
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 23.06
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.71Hz)",
+      "match": false,
+      "signalStrength": 22.58
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 22.9
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B1 (61.86Hz)",
+      "match": false,
+      "signalStrength": 21.71
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 21.09
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 21.07
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 19.69
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.71Hz)",
+      "match": false,
+      "signalStrength": 19.5
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 19.44
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B1 (61.86Hz)",
+      "match": false,
+      "signalStrength": 18.62
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 18.37
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 18.24
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B2 (123.71Hz)",
+      "match": false,
+      "signalStrength": 17.52
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B1 (61.86Hz)",
+      "match": false,
+      "signalStrength": 17.42
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 17.11
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B1 (61.94Hz)",
+      "match": false,
+      "signalStrength": 17.07
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 16.7
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B1 (61.86Hz)",
+      "match": false,
+      "signalStrength": 16.49
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3 (246.94Hz)",
+      "detected": "B3 (247.42Hz)",
+      "match": true,
+      "signalStrength": 16.23
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (326.53Hz)",
+      "match": true,
+      "signalStrength": 20.86
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "D#4 (313.73Hz)",
+      "match": false,
+      "signalStrength": 28.83
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.34Hz)",
+      "match": false,
+      "signalStrength": 43.61
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 51.92
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 50.42
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 33.49
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 32.71
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.12Hz)",
+      "match": false,
+      "signalStrength": 31.56
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 30.65
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 30.61
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 28.35
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 27.6
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 27.11
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 26.47
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 25.9
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (165.52Hz)",
+      "match": false,
+      "signalStrength": 25.51
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 24.83
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.12Hz)",
+      "match": false,
+      "signalStrength": 23.98
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 23.68
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 22.34
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 21.22
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 20.83
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (165.52Hz)",
+      "match": false,
+      "signalStrength": 20.58
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 19.26
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 18.72
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 18.44
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (165.52Hz)",
+      "match": false,
+      "signalStrength": 17.76
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.12Hz)",
+      "match": false,
+      "signalStrength": 17.39
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 17.1
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 16.69
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 16.21
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 16.22
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.12Hz)",
+      "match": false,
+      "signalStrength": 16.11
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 16.11
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 16.32
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 16.51
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 16.73
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.12Hz)",
+      "match": false,
+      "signalStrength": 16.96
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 17.17
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 17.13
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 17.3
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 17.55
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 17.84
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 17.97
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.03
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 18.22
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.32
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 18.36
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 18.46
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 18.47
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.58
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 18.6
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.63
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 18.71
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.12Hz)",
+      "match": false,
+      "signalStrength": 18.83
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 18.73
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 18.73
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 18.71
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 18.7
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 18.7
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 18.63
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 18.51
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.57
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 18.35
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "A2 (110.09Hz)",
+      "match": false,
+      "signalStrength": 18.28
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.26
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 18.11
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 18.03
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 17.91
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 17.89
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 17.71
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 17.64
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 17.55
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 17.4
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 17.2
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 17.06
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.62Hz)",
+      "match": false,
+      "signalStrength": 17.14
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 16.9
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E2 (82.47Hz)",
+      "match": false,
+      "signalStrength": 16.73
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (328.77Hz)",
+      "match": true,
+      "signalStrength": 16.61
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E3 (164.95Hz)",
+      "match": false,
+      "signalStrength": 16.56
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "C2 (66.02Hz)",
+      "match": false,
+      "signalStrength": 16.34
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4 (329.63Hz)",
+      "detected": "E4 (331.03Hz)",
+      "match": true,
+      "signalStrength": 16.18
+    }
+  ],
+  "byString": [
+    {
+      "string": "E (6th string)",
+      "expected": "E2",
+      "expectedFreq": 82.41,
+      "accuracy": 11.11,
+      "detections": [
+        {
+          "detected": "G3",
+          "detectedFreq": 200.84,
+          "match": false,
+          "signalStrength": 18.28
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.05,
+          "match": true,
+          "signalStrength": 20.86
+        },
+        {
+          "detected": "A#3",
+          "detectedFreq": 228.57,
+          "match": false,
+          "signalStrength": 36.98
+        },
+        {
+          "detected": "A3",
+          "detectedFreq": 226.42,
+          "match": false,
+          "signalStrength": 53.32
+        },
+        {
+          "detected": "A3",
+          "detectedFreq": 223.26,
+          "match": false,
+          "signalStrength": 88.59
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.85,
+          "match": false,
+          "signalStrength": 100
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 19.64
+        },
+        {
+          "detected": "A3",
+          "detectedFreq": 222.22,
+          "match": false,
+          "signalStrength": 31.4
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 111.11,
+          "match": false,
+          "signalStrength": 21.47
+        }
+      ]
+    },
+    {
+      "string": "A (5th string)",
+      "expected": "A2",
+      "expectedFreq": 110,
+      "accuracy": 60,
+      "detections": [
+        {
+          "detected": "A#3",
+          "detectedFreq": 229.67,
+          "match": false,
+          "signalStrength": 25.74
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 111.89,
+          "match": true,
+          "signalStrength": 36.5
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": true,
+          "signalStrength": 16.05
+        },
+        {
+          "detected": "A3",
+          "detectedFreq": 222.22,
+          "match": false,
+          "signalStrength": 27.09
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 109.84,
+          "match": true,
+          "signalStrength": 26.17
+        }
+      ]
+    },
+    {
+      "string": "D (4th string)",
+      "expected": "D3",
+      "expectedFreq": 146.83,
+      "accuracy": 49.68,
+      "detections": [
+        {
+          "detected": "F#3",
+          "detectedFreq": 180.45,
+          "match": false,
+          "signalStrength": 17.39
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 145.9,
+          "match": true,
+          "signalStrength": 20.05
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 72.51,
+          "match": false,
+          "signalStrength": 25.29
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 31.97
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 32.58
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 32.53
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 32.79
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 32.13
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 32.32
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 32.2
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 31.86
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 31.08
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 30.7
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 30.28
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 30.55
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 29.69
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 30.1
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 29.41
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 29.35
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 28.54
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 28.71
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 28.61
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 28.02
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 27.5
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 27.18
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 26.91
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 26.84
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 26.44
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 26.72
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 26.08
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 26.04
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 25.52
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 25.29
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 24.76
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 25.24
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 24.64
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 24.7
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 23.77
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 24.07
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 23.16
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 23.25
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 22.62
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 22.87
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 22.49
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 22.95
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 21.7
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 21.82
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 21.38
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 21.51
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 20.64
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 20.9
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.69,
+          "match": true,
+          "signalStrength": 20.22
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 19.98
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 19.56
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 19.82
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 19.54
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 19.29
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 18.84
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 18.66
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 18.03
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 18.06
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 17.72
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 17.79
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.69,
+          "match": true,
+          "signalStrength": 17.48
+        },
+        {
+          "detected": "F#3",
+          "detectedFreq": 179.78,
+          "match": false,
+          "signalStrength": 16.41
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 144.14,
+          "match": true,
+          "signalStrength": 23.64
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 72.62,
+          "match": false,
+          "signalStrength": 25.64
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 33.51
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 33.74
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 33.68
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 34.21
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 33.97
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 34.33
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 33.62
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 33.81
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 33.02
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 33.61
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 32.69
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 32.24
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 32.31
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 31.72
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 30.78
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 31.22
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 30.25
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 30.5
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 29.92
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 29.84
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 29.12
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 29.17
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 28.09
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 28.69
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 28.15
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 27.94
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 27.41
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 27.29
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 26.74
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 26.83
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 26.06
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 26.29
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 25.3
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.73,
+          "match": false,
+          "signalStrength": 25.7
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 25.06
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 25.16
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 24
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 24.04
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.69,
+          "match": true,
+          "signalStrength": 23.55
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 23.79
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 22.81
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 23.33
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 22.35
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 22.69
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.69,
+          "match": true,
+          "signalStrength": 22.45
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 22.56
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 21.81
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 22.21
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 21.62
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 21.7
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 21
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 21.34
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 20.93
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 21.11
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 20.65
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 20.66
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 20.17
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 20.39
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 20.15
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 20.23
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 19.52
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 19.82
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 19.51
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 19.58
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 18.99
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 19.19
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 18.73
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 19
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 18.35
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 18.56
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 18.1
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 18.35
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 17.8
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 18
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 17.57
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 17.77
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 17.36
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 17.43
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 17.35
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 17.49
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 17.03
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 17.08
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 146.79,
+          "match": true,
+          "signalStrength": 16.66
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.51,
+          "match": false,
+          "signalStrength": 16.97
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 16.47
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 16.55
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 16.02
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 16.23
+        },
+        {
+          "detected": "D3",
+          "detectedFreq": 147.24,
+          "match": true,
+          "signalStrength": 16.15
+        },
+        {
+          "detected": "D2",
+          "detectedFreq": 73.62,
+          "match": false,
+          "signalStrength": 16
+        }
+      ]
+    },
+    {
+      "string": "G (3rd string)",
+      "expected": "G3",
+      "expectedFreq": 196,
+      "accuracy": 42.42,
+      "detections": [
+        {
+          "detected": "G#3",
+          "detectedFreq": 202.53,
+          "match": false,
+          "signalStrength": 22.21
+        },
+        {
+          "detected": "G#3",
+          "detectedFreq": 208.7,
+          "match": false,
+          "signalStrength": 63.28
+        },
+        {
+          "detected": "G#3",
+          "detectedFreq": 203.39,
+          "match": false,
+          "signalStrength": 94.88
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 200.84,
+          "match": true,
+          "signalStrength": 100
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 196.72,
+          "match": true,
+          "signalStrength": 99.26
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 64.26,
+          "match": false,
+          "signalStrength": 90.67
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.12,
+          "match": true,
+          "signalStrength": 90.81
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.16,
+          "match": false,
+          "signalStrength": 93.65
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.92,
+          "match": true,
+          "signalStrength": 87.23
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.56,
+          "match": false,
+          "signalStrength": 73.67
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 197.53,
+          "match": true,
+          "signalStrength": 68.63
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.56,
+          "match": false,
+          "signalStrength": 58.79
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 197.53,
+          "match": true,
+          "signalStrength": 57.35
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.36,
+          "match": false,
+          "signalStrength": 52.55
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.92,
+          "match": true,
+          "signalStrength": 51.63
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.16,
+          "match": false,
+          "signalStrength": 46.49
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.92,
+          "match": true,
+          "signalStrength": 44.43
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.36,
+          "match": false,
+          "signalStrength": 39.88
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 196.72,
+          "match": true,
+          "signalStrength": 38.69
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 65.31,
+          "match": false,
+          "signalStrength": 35.82
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.16,
+          "match": false,
+          "signalStrength": 33.74
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 196.72,
+          "match": true,
+          "signalStrength": 32.89
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.16,
+          "match": false,
+          "signalStrength": 29.84
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.92,
+          "match": true,
+          "signalStrength": 29.11
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.36,
+          "match": false,
+          "signalStrength": 26.11
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 65.31,
+          "match": false,
+          "signalStrength": 25.19
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 98.16,
+          "match": false,
+          "signalStrength": 22.97
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.92,
+          "match": true,
+          "signalStrength": 21.57
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 65.31,
+          "match": false,
+          "signalStrength": 20.46
+        },
+        {
+          "detected": "G2",
+          "detectedFreq": 97.96,
+          "match": false,
+          "signalStrength": 19.95
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 195.92,
+          "match": true,
+          "signalStrength": 19.38
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 65.4,
+          "match": false,
+          "signalStrength": 18.56
+        },
+        {
+          "detected": "G3",
+          "detectedFreq": 196.72,
+          "match": true,
+          "signalStrength": 16.25
+        }
+      ]
+    },
+    {
+      "string": "B (2nd string)",
+      "expected": "B3",
+      "expectedFreq": 246.94,
+      "accuracy": 44.12,
+      "detections": [
+        {
+          "detected": "C4",
+          "detectedFreq": 259.46,
+          "match": false,
+          "signalStrength": 20.99
+        },
+        {
+          "detected": "A#3",
+          "detectedFreq": 237.62,
+          "match": false,
+          "signalStrength": 49.99
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 240,
+          "match": true,
+          "signalStrength": 100
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 244.9,
+          "match": true,
+          "signalStrength": 77.26
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 248.7,
+          "match": true,
+          "signalStrength": 66.79
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.71,
+          "match": false,
+          "signalStrength": 47.76
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 246.15,
+          "match": true,
+          "signalStrength": 47.69
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.39,
+          "match": false,
+          "signalStrength": 36.47
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 246.15,
+          "match": true,
+          "signalStrength": 37.03
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.71,
+          "match": false,
+          "signalStrength": 29.49
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 29.49
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 26.92
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 27.06
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.71,
+          "match": false,
+          "signalStrength": 25.15
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 24.6
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 23.06
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.71,
+          "match": false,
+          "signalStrength": 22.58
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 22.9
+        },
+        {
+          "detected": "B1",
+          "detectedFreq": 61.86,
+          "match": false,
+          "signalStrength": 21.71
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 21.09
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 21.07
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 19.69
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.71,
+          "match": false,
+          "signalStrength": 19.5
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 19.44
+        },
+        {
+          "detected": "B1",
+          "detectedFreq": 61.86,
+          "match": false,
+          "signalStrength": 18.62
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 18.37
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 18.24
+        },
+        {
+          "detected": "B2",
+          "detectedFreq": 123.71,
+          "match": false,
+          "signalStrength": 17.52
+        },
+        {
+          "detected": "B1",
+          "detectedFreq": 61.86,
+          "match": false,
+          "signalStrength": 17.42
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 17.11
+        },
+        {
+          "detected": "B1",
+          "detectedFreq": 61.94,
+          "match": false,
+          "signalStrength": 17.07
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 16.7
+        },
+        {
+          "detected": "B1",
+          "detectedFreq": 61.86,
+          "match": false,
+          "signalStrength": 16.49
+        },
+        {
+          "detected": "B3",
+          "detectedFreq": 247.42,
+          "match": true,
+          "signalStrength": 16.23
+        }
+      ]
+    },
+    {
+      "string": "E (1st string)",
+      "expected": "E4",
+      "expectedFreq": 329.63,
+      "accuracy": 18.07,
+      "detections": [
+        {
+          "detected": "E4",
+          "detectedFreq": 326.53,
+          "match": true,
+          "signalStrength": 20.86
+        },
+        {
+          "detected": "D#4",
+          "detectedFreq": 313.73,
+          "match": false,
+          "signalStrength": 28.83
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.34,
+          "match": false,
+          "signalStrength": 43.61
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 51.92
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 50.42
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 33.49
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 32.71
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.12,
+          "match": false,
+          "signalStrength": 31.56
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 30.65
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 30.61
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 28.35
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 27.6
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 27.11
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 26.47
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 25.9
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 165.52,
+          "match": false,
+          "signalStrength": 25.51
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 24.83
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.12,
+          "match": false,
+          "signalStrength": 23.98
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 23.68
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 22.34
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 21.22
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 20.83
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 165.52,
+          "match": false,
+          "signalStrength": 20.58
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 19.26
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 18.72
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 18.44
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 165.52,
+          "match": false,
+          "signalStrength": 17.76
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.12,
+          "match": false,
+          "signalStrength": 17.39
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 17.1
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 16.69
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 16.21
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 16.22
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.12,
+          "match": false,
+          "signalStrength": 16.11
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 16.11
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 16.32
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 16.51
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 16.73
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.12,
+          "match": false,
+          "signalStrength": 16.96
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 17.17
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 17.13
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 17.3
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 17.55
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 17.84
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 17.97
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.03
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 18.22
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.32
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 18.36
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 18.46
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 18.47
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.58
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 18.6
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.63
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 18.71
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.12,
+          "match": false,
+          "signalStrength": 18.83
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 18.73
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 18.73
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 18.71
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 18.7
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 18.7
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 18.63
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 18.51
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.57
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 18.35
+        },
+        {
+          "detected": "A2",
+          "detectedFreq": 110.09,
+          "match": false,
+          "signalStrength": 18.28
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.26
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 18.11
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 18.03
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 17.91
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 17.89
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 17.71
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 17.64
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 17.55
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 17.4
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 17.2
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 17.06
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.62,
+          "match": false,
+          "signalStrength": 17.14
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 16.9
+        },
+        {
+          "detected": "E2",
+          "detectedFreq": 82.47,
+          "match": false,
+          "signalStrength": 16.73
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 328.77,
+          "match": true,
+          "signalStrength": 16.61
+        },
+        {
+          "detected": "E3",
+          "detectedFreq": 164.95,
+          "match": false,
+          "signalStrength": 16.56
+        },
+        {
+          "detected": "C2",
+          "detectedFreq": 66.02,
+          "match": false,
+          "signalStrength": 16.34
+        },
+        {
+          "detected": "E4",
+          "detectedFreq": 331.03,
+          "match": true,
+          "signalStrength": 16.18
+        }
+      ]
+    }
+  ]
+}

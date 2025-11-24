@@ -729,6 +729,18 @@ const App = {
             this.updateCalibrationAlgorithmDropdown().catch(err => {
                 Logger.error('Failed to populate calibration algorithm dropdown', { error: err.message });
             });
+            
+            // Setup signal threshold slider
+            const signalThresholdSlider = document.getElementById('cal-signal-threshold');
+            const signalThresholdValue = document.getElementById('cal-signal-threshold-value');
+            if (signalThresholdSlider && signalThresholdValue) {
+                // Update display value when slider changes
+                signalThresholdSlider.oninput = () => {
+                    signalThresholdValue.textContent = signalThresholdSlider.value;
+                };
+                // Set initial value
+                signalThresholdValue.textContent = signalThresholdSlider.value;
+            }
         };
         
         // Update calibration algorithm dropdown with available algorithms
@@ -1002,24 +1014,28 @@ const App = {
             
             // Detect pitch using the selected algorithm
             let pitch = -1;
+            const algorithm = useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation';
+            
             if (useAdapter && calibrationDetector.currentImpl) {
-                // Check if it's autocorrelation (needs sampleRate) or pitchfinder (just buffer)
-                const isAutocorrelation = detector.config?.algorithm === 'autocorrelation';
+                // Check if it's autocorrelation or pitchy (needs sampleRate) vs pitchfinder (just buffer)
+                const needsSampleRate = algorithm === 'autocorrelation' || algorithm === 'pitchy';
                 
-                if (isAutocorrelation && calibrationDetector.currentImpl.detector) {
-                    // Autocorrelation needs both buffer and sampleRate
+                if (needsSampleRate && calibrationDetector.currentImpl.detector) {
+                    // Autocorrelation and Pitchy need both buffer and sampleRate
                     try {
                         pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray, sampleRate);
                     } catch (e) {
-                        Logger.warn('Error calling autocorrelation detector', { error: e.message });
+                        Logger.warn('Error calling detector with sampleRate', { error: e.message, algorithm });
                     }
                 } else if (calibrationDetector.currentImpl.detector) {
                     // Pitchfinder algorithms just need the buffer
                     try {
                         pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
                     } catch (e) {
-                        Logger.warn('Error calling adapter detector', { error: e.message });
+                        Logger.warn('Error calling adapter detector', { error: e.message, algorithm });
                     }
+                } else {
+                    Logger.warn('No detector function available', { algorithm, hasDetector: false });
                 }
             } else if (PitchDetector.autocorrelate) {
                 // Fallback to autocorrelation
@@ -1028,17 +1044,35 @@ const App = {
             
             // Log pitch detection attempts occasionally for debugging
             if (now - lastLogTime > 2000) {
+                const note = pitch > 0 ? PitchDetector.frequencyToNote(pitch) : null;
                 Logger.debug('Calibration pitch detection', {
                     pitch: pitch > 0 ? pitch.toFixed(2) : 'none',
+                    note: note ? `${note.note}${note.octave}` : 'none',
                     signalStrength: signalStrength.toFixed(2),
-                    algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation',
+                    algorithm,
                     useAdapter,
                     hasDetector: useAdapter ? !!calibrationDetector.currentImpl?.detector : false
                 });
+                lastLogTime = now;
             }
             
-            // Lower threshold to 2 (same as guided calibration)
-            if (pitch > 0 && signalStrength > 2) { // Minimum signal threshold
+            // Get signal threshold from slider
+            const signalThresholdSlider = document.getElementById('cal-signal-threshold');
+            const signalThreshold = signalThresholdSlider ? parseFloat(signalThresholdSlider.value) : 2;
+            
+            // Update display based on signal strength and pitch
+            if (signalStrength <= signalThreshold) {
+                // Signal too weak
+                document.getElementById('cal-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+                document.getElementById('cal-frequency').textContent = '0.0';
+                document.getElementById('cal-octave').textContent = '--';
+            } else if (pitch <= 0) {
+                // Pitch detection failed but signal is strong
+                document.getElementById('cal-detected-note').innerHTML = '<span class="text-slate-500">No pitch</span>';
+                document.getElementById('cal-frequency').textContent = '0.0';
+                document.getElementById('cal-octave').textContent = '--';
+            } else if (pitch > 0 && signalStrength > signalThreshold) {
+                // Valid pitch detected
                 const note = PitchDetector.frequencyToNote(pitch);
                 
                 if (!note) return; // Invalid note
@@ -1296,24 +1330,28 @@ const App = {
             
             // Detect pitch using the selected algorithm
             let pitch = -1;
+            const algorithm = useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation';
+            
             if (useAdapter && calibrationDetector.currentImpl) {
-                // Check if it's autocorrelation (needs sampleRate) or pitchfinder (just buffer)
-                const isAutocorrelation = detector.config?.algorithm === 'autocorrelation';
+                // Check if it's autocorrelation or pitchy (needs sampleRate) vs pitchfinder (just buffer)
+                const needsSampleRate = algorithm === 'autocorrelation' || algorithm === 'pitchy';
                 
-                if (isAutocorrelation && calibrationDetector.currentImpl.detector) {
-                    // Autocorrelation needs both buffer and sampleRate
+                if (needsSampleRate && calibrationDetector.currentImpl.detector) {
+                    // Autocorrelation and Pitchy need both buffer and sampleRate
                     try {
                         pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray, sampleRate);
                     } catch (e) {
-                        Logger.warn('Error calling autocorrelation detector in guided calibration', { error: e.message });
+                        Logger.warn('Error calling detector with sampleRate in guided calibration', { error: e.message, algorithm });
                     }
                 } else if (calibrationDetector.currentImpl.detector) {
                     // Pitchfinder algorithms just need the buffer
                     try {
                         pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
                     } catch (e) {
-                        Logger.warn('Error calling adapter detector in guided calibration', { error: e.message });
+                        Logger.warn('Error calling adapter detector in guided calibration', { error: e.message, algorithm });
                     }
+                } else {
+                    Logger.warn('No detector function available in guided calibration', { algorithm, hasDetector: false });
                 }
             } else if (PitchDetector.autocorrelate) {
                 // Fallback to autocorrelation
@@ -1322,17 +1360,21 @@ const App = {
             
             // Log pitch detection attempts occasionally for debugging
             if (now - lastLogTime > 2000) {
+                const note = pitch > 0 ? PitchDetector.frequencyToNote(pitch) : null;
                 Logger.debug('Guided calibration pitch detection', {
                     pitch: pitch > 0 ? pitch.toFixed(2) : 'none',
+                    note: note ? `${note.note}${note.octave}` : 'none',
                     signalStrength: signalStrength.toFixed(2),
-                    algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation',
+                    algorithm,
                     useAdapter,
                     hasDetector: useAdapter ? !!calibrationDetector.currentImpl?.detector : false
                 });
+                lastLogTime = now;
             }
             
-            // Lower signal threshold and be more lenient with detections
-            const signalThreshold = 2; // Lowered from 5
+            // Get signal threshold from slider
+            const signalThresholdSlider = document.getElementById('cal-signal-threshold');
+            const signalThreshold = signalThresholdSlider ? parseFloat(signalThresholdSlider.value) : 2;
             
             if (pitch > 0 && signalStrength > signalThreshold) {
                 const note = PitchDetector.frequencyToNote(pitch);

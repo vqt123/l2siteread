@@ -302,8 +302,26 @@ const PitchDetector = {
             return -1; // Reject it
         }
         
-        // Always check if detected frequency might be a harmonic of a lower fundamental
-        // This is critical - guitar strings often produce strong harmonics
+        // If detected frequency is already in the expected range for guitar strings, 
+        // DISABLE harmonic detection - we're detecting the actual fundamental
+        // Guitar strings produce strong harmonics, but when playing open strings,
+        // the detected frequency IS the fundamental, not a harmonic
+        const isInGuitarRange = detectedFreq >= 82 && detectedFreq <= 330;
+        
+        // For guitar range frequencies, trust the detection - don't try to "correct" it
+        // The correlation at half frequency might be strong due to mathematical relationship,
+        // but that doesn't mean it's the fundamental
+        if (isInGuitarRange) {
+            // Only check if detected frequency is outside expected range
+            if (detectedFreq < expectedRange.min || detectedFreq > expectedRange.max) {
+                return -1;
+            }
+            // Trust the detected frequency - return it as-is
+            return detectedFreq;
+        }
+        
+        // For frequencies outside guitar range, check if they might be harmonics
+        // This handles cases where we detect a very high frequency that's actually a harmonic
         let bestFundamental = detectedFreq;
         let bestFundamentalCorrelation = detectedCorrelation || 0;
         
@@ -319,12 +337,8 @@ const PitchDetector = {
             if (candidateOffset >= minSamples && candidateOffset < correlations.length && correlations[candidateOffset] !== undefined) {
                 const candidateCorrelation = correlations[candidateOffset];
                 
-                // If the fundamental has comparable or stronger correlation, prefer it
-                // This handles the case where we detect 147Hz (D3) but 73Hz (D2) has stronger correlation
-                // We want the lower frequency (fundamental) if it has good correlation
-                if (candidateCorrelation > bestFundamentalCorrelation * 0.7) {
-                    // The fundamental has at least 70% of the detected frequency's correlation
-                    // Prefer the fundamental (lower frequency)
+                // For non-guitar range: be more lenient (might be a harmonic)
+                if (candidateCorrelation > bestFundamentalCorrelation * 0.9 && candidateCorrelation > 0.3) {
                     if (candidateFundamental < bestFundamental) {
                         bestFundamental = candidateFundamental;
                         bestFundamentalCorrelation = candidateCorrelation;
@@ -333,9 +347,14 @@ const PitchDetector = {
             }
         }
         
-        // If we found a better fundamental (lower frequency with good correlation), use it
-        if (bestFundamental < detectedFreq && bestFundamentalCorrelation > 0.3) {
-            return bestFundamental;
+        // Only use a lower fundamental if it's clearly better (for non-guitar range)
+        if (bestFundamental < detectedFreq) {
+            const correlationImprovement = bestFundamentalCorrelation / (detectedCorrelation || 0.001);
+            
+            // For non-guitar range: require 10%+ improvement
+            if (correlationImprovement > 1.1 && bestFundamentalCorrelation > 0.3) {
+                return bestFundamental;
+            }
         }
         
         // If detected frequency is outside expected range, reject it
