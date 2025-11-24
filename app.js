@@ -18,14 +18,15 @@ const App = {
         active: false,
         currentStringIndex: 0,
         strings: [
-            { note: 'E', octave: 4, name: 'E (6th string)', expectedFreq: 82.41 },
-            { note: 'A', octave: 4, name: 'A (5th string)', expectedFreq: 110.00 },
-            { note: 'D', octave: 4, name: 'D (4th string)', expectedFreq: 146.83 },
-            { note: 'G', octave: 4, name: 'G (3rd string)', expectedFreq: 196.00 },
-            { note: 'B', octave: 4, name: 'B (2nd string)', expectedFreq: 246.94 },
-            { note: 'E', octave: 5, name: 'E (1st string)', expectedFreq: 329.63 }
+            { note: 'E', octave: 2, name: 'E (6th string)', expectedFreq: 82.41 },
+            { note: 'A', octave: 2, name: 'A (5th string)', expectedFreq: 110.00 },
+            { note: 'D', octave: 3, name: 'D (4th string)', expectedFreq: 146.83 },
+            { note: 'G', octave: 3, name: 'G (3rd string)', expectedFreq: 196.00 },
+            { note: 'B', octave: 3, name: 'B (2nd string)', expectedFreq: 246.94 },
+            { note: 'E', octave: 4, name: 'E (1st string)', expectedFreq: 329.63 }
         ],
-        logs: [] // Array to store detection logs for each string
+        logs: [], // Array to store detection logs for each string
+        sessionLog: [] // Separate log for this calibration session (concise)
     },
     settings: {
         clefs: ['treble'],
@@ -456,10 +457,12 @@ const App = {
             this.guidedCalibration.active = false;
             this.guidedCalibration.currentStringIndex = 0;
             this.guidedCalibration.logs = [];
+            this.guidedCalibration.sessionLog = [];
             document.getElementById('guided-calibration').classList.remove('hidden');
             document.getElementById('free-calibration').classList.add('hidden');
             document.getElementById('cal-progress').classList.add('hidden');
             document.getElementById('btn-save-cal-logs').classList.add('hidden');
+            document.getElementById('btn-export-cal-logs').classList.add('hidden');
         };
         
         document.getElementById('btn-close-calibration').onclick = () => {
@@ -502,6 +505,16 @@ const App = {
         document.getElementById('btn-save-cal-logs').onclick = () => {
             this.saveCalibrationLogs();
         };
+        
+        const exportCalBtn = document.getElementById('btn-export-cal-logs');
+        if (exportCalBtn) {
+            exportCalBtn.onclick = () => {
+                console.log('Export button clicked');
+                this.exportCalibrationSessionLogs();
+            };
+        } else {
+            console.error('btn-export-cal-logs button not found');
+        }
         
         document.getElementById('btn-next-string').onclick = () => {
             this.advanceToNextString();
@@ -680,11 +693,13 @@ const App = {
         this.guidedCalibration.active = true;
         this.guidedCalibration.currentStringIndex = 0;
         this.guidedCalibration.logs = [];
+        this.guidedCalibration.sessionLog = []; // Start new session log
         
         // Update UI
         document.getElementById('cal-progress').classList.remove('hidden');
         document.getElementById('btn-start-guided-cal').textContent = 'Stop Calibration';
         document.getElementById('btn-next-string').classList.remove('hidden');
+        document.getElementById('btn-export-cal-logs').classList.add('hidden'); // Hide until stopped
         this.updateGuidedCalibrationUI();
         
         // Create detector for guided calibration
@@ -728,17 +743,6 @@ const App = {
             // Lower signal threshold and be more lenient with detections
             const signalThreshold = 2; // Lowered from 5
             
-            // Log detection attempts for debugging
-            if (signalStrength > signalThreshold) {
-                Logger.debug('Pitch detection attempt', {
-                    signalStrength: Math.round(signalStrength * 100) / 100,
-                    pitch: pitch > 0 ? Math.round(pitch * 100) / 100 : 'none',
-                    rms: Math.round((Math.sqrt(detector.dataArray.reduce((sum, val) => sum + val * val, 0) / detector.dataArray.length)) * 10000) / 10000,
-                    bufferLength: detector.dataArray.length,
-                    sampleRate: detector.audioContext.sampleRate
-                });
-            }
-            
             if (pitch > 0 && signalStrength > signalThreshold) {
                 const note = PitchDetector.frequencyToNote(pitch);
                 
@@ -776,12 +780,17 @@ const App = {
                         Math.abs(lastDetection.detectedFrequency - pitch) > 3 || // Lowered from 5
                         timeSinceLastDetection > 500) { // Allow same note if 500ms passed
                         detector.detections.push(detection);
-                        Logger.debug('Detection recorded', {
-                            note: noteDisplay,
-                            frequency: pitch,
-                            signalStrength: signalStrength,
+                        
+                        // Log to calibration session log (concise)
+                        this.guidedCalibration.sessionLog.push({
+                            timestamp: Date.now(),
+                            string: currentString.name,
+                            expected: `${currentString.note}${currentString.octave}`,
+                            expectedFreq: currentString.expectedFreq,
+                            detected: noteDisplay,
+                            detectedFreq: Math.round(pitch * 100) / 100,
                             match: match,
-                            totalDetections: detector.detections.length
+                            signalStrength: Math.round(signalStrength * 100) / 100
                         });
                     }
                     
@@ -896,7 +905,10 @@ const App = {
         document.getElementById('btn-next-string').classList.add('hidden');
         document.getElementById('btn-save-cal-logs').classList.remove('hidden');
         
-        Logger.info('Guided calibration completed', { logs: this.guidedCalibration.logs });
+        // Show export button
+        if (this.guidedCalibration.sessionLog.length > 0) {
+            document.getElementById('btn-export-cal-logs').classList.remove('hidden');
+        }
     },
 
     stopGuidedCalibration: function() {
@@ -908,6 +920,11 @@ const App = {
         
         document.getElementById('btn-start-guided-cal').textContent = 'Start Guided Calibration';
         document.getElementById('btn-next-string').classList.add('hidden');
+        
+        // Show export button if there are logs
+        if (this.guidedCalibration.sessionLog.length > 0) {
+            document.getElementById('btn-export-cal-logs').classList.remove('hidden');
+        }
         
         // Reset display
         document.getElementById('cal-guided-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
@@ -1205,6 +1222,115 @@ const App = {
         URL.revokeObjectURL(url);
         
         Logger.info('All logs exported');
+    },
+
+    exportCalibrationSessionLogs: function() {
+        console.log('Export calibration session logs called', {
+            hasSessionLog: !!this.guidedCalibration.sessionLog,
+            logLength: this.guidedCalibration.sessionLog?.length || 0,
+            sessionLog: this.guidedCalibration.sessionLog
+        });
+        
+        if (!this.guidedCalibration.sessionLog || this.guidedCalibration.sessionLog.length === 0) {
+            alert('No calibration session logs to export. Please run calibration first.');
+            return;
+        }
+        
+        // Analyze the session log to create a concise summary
+        const summary = {
+            totalDetections: this.guidedCalibration.sessionLog.length,
+            strings: {},
+            accuracy: {}
+        };
+        
+        // Group by string
+        this.guidedCalibration.sessionLog.forEach(log => {
+            if (!summary.strings[log.string]) {
+                summary.strings[log.string] = {
+                    expected: log.expected,
+                    expectedFreq: log.expectedFreq,
+                    detections: [],
+                    correct: 0,
+                    total: 0
+                };
+            }
+            
+            summary.strings[log.string].detections.push({
+                detected: log.detected,
+                detectedFreq: log.detectedFreq,
+                match: log.match,
+                signalStrength: log.signalStrength,
+                timestamp: new Date(log.timestamp).toISOString()
+            });
+            
+            summary.strings[log.string].total++;
+            if (log.match) {
+                summary.strings[log.string].correct++;
+            }
+        });
+        
+        // Calculate accuracy per string
+        Object.keys(summary.strings).forEach(string => {
+            const s = summary.strings[string];
+            summary.accuracy[string] = {
+                accuracy: s.total > 0 ? Math.round((s.correct / s.total) * 100 * 100) / 100 : 0,
+                correct: s.correct,
+                total: s.total
+            };
+        });
+        
+        // Create concise export
+        const exportData = {
+            timestamp: new Date().toISOString(),
+            sessionSummary: {
+                totalDetections: summary.totalDetections,
+                accuracyByString: summary.accuracy
+            },
+            detections: this.guidedCalibration.sessionLog.map(log => ({
+                string: log.string,
+                expected: `${log.expected} (${log.expectedFreq}Hz)`,
+                detected: `${log.detected} (${log.detectedFreq}Hz)`,
+                match: log.match,
+                signalStrength: log.signalStrength
+            })),
+            // Grouped by string for easier analysis
+            byString: Object.keys(summary.strings).map(string => ({
+                string: string,
+                expected: summary.strings[string].expected,
+                expectedFreq: summary.strings[string].expectedFreq,
+                accuracy: summary.accuracy[string].accuracy,
+                detections: summary.strings[string].detections.map(d => ({
+                    detected: d.detected,
+                    detectedFreq: d.detectedFreq,
+                    match: d.match,
+                    signalStrength: d.signalStrength
+                }))
+            }))
+        };
+        
+        const logText = JSON.stringify(exportData, null, 2);
+        
+        console.log('Exporting calibration session logs', {
+            dataSize: logText.length,
+            detections: this.guidedCalibration.sessionLog.length
+        });
+        
+        // Create and download file
+        try {
+            const blob = new Blob([logText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calibration-session-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            console.log('File download initiated');
+        } catch (error) {
+            console.error('Error exporting logs:', error);
+            alert('Error exporting logs: ' + error.message);
+        }
     },
 
     nextRound: function() {

@@ -84,7 +84,7 @@ const PitchDetector = {
 
     autocorrelate: function(buffer, sampleRate) {
         const MIN_FREQUENCY = 60; // Minimum frequency to detect (Hz) - helps avoid harmonics
-        const MAX_FREQUENCY = 2000; // Maximum frequency to detect (Hz)
+        const MAX_FREQUENCY = 500; // Maximum frequency to detect (Hz) - lowered to avoid false 2000Hz detections
         const MIN_SAMPLES = Math.floor(sampleRate / MAX_FREQUENCY); // Minimum offset for max frequency
         const MAX_SAMPLES = Math.floor(sampleRate / MIN_FREQUENCY); // Maximum offset for min frequency
         const GOOD_ENOUGH_CORRELATION = 0.60; // Lowered significantly for better detection
@@ -96,6 +96,9 @@ const PitchDetector = {
         let rms = 0;
         let foundGoodCorrelation = false;
         const correlations = new Array(ACTUAL_MAX_SAMPLES);
+        
+        // Track multiple peaks to help identify fundamentals vs harmonics
+        const peaks = [];
 
         // Calculate RMS for signal strength
         for (let i = 0; i < SIZE; i++) {
@@ -105,7 +108,7 @@ const PitchDetector = {
         rms = Math.sqrt(rms / SIZE);
         
         if (rms < 0.005) {
-            Logger.debug('Autocorrelation: insufficient signal', { rms: Math.round(rms * 10000) / 10000 });
+            // Don't log insufficient signal - too spammy
             return -1; // Lowered threshold - not enough signal
         }
 
@@ -156,7 +159,7 @@ const PitchDetector = {
                     const frequency = sampleRate / (bestOffset + shift);
                     
                     // Check if this is likely a harmonic (2x, 3x, etc. of a lower frequency)
-                    const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES);
+                    const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES, bestCorrelation);
                     if (fundamental > 0) {
                         return fundamental;
                     }
@@ -165,59 +168,100 @@ const PitchDetector = {
             lastCorrelation = correlation;
         }
         
+        // After the loop, identify peaks from the correlations array
+        for (let offset = MIN_SAMPLES + 2; offset < ACTUAL_MAX_SAMPLES - 2; offset++) {
+            const correlation = correlations[offset];
+            if (correlation > 0.3) {
+                // Check if this is a local maximum
+                if (correlation > correlations[offset - 1] && 
+                    correlation > correlations[offset + 1] &&
+                    correlation > correlations[offset - 2] * 0.9 &&
+                    correlation > correlations[offset + 2] * 0.9) {
+                    peaks.push({
+                        offset: offset,
+                        correlation: correlation,
+                        frequency: sampleRate / offset
+                    });
+                }
+            }
+        }
+        
         // If we found any correlation, use it (even if below threshold)
         // This helps catch weak signals
         if (bestCorrelation > 0.001 && bestOffset > 0 && bestOffset >= MIN_SAMPLES) {
             const frequency = sampleRate / bestOffset;
             
-            // Only check harmonics if correlation is decent
-            if (bestCorrelation > 0.3) {
-                const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES);
-                if (fundamental > 0 && fundamental !== frequency) {
-                    Logger.debug('Autocorrelation: found frequency (corrected harmonic)', {
-                        frequency: Math.round(frequency * 100) / 100,
-                        fundamental: Math.round(fundamental * 100) / 100,
-                        bestCorrelation: Math.round(bestCorrelation * 1000) / 1000,
-                        bestOffset: bestOffset
-                    });
-                    return fundamental;
+            // Before checking harmonics, see if we have peaks that suggest a lower fundamental
+            // Sort peaks by frequency (lowest first)
+            peaks.sort((a, b) => a.frequency - b.frequency);
+            
+            // Check if the best peak might be a harmonic of a lower peak
+            for (let i = 0; i < peaks.length; i++) {
+                const lowerPeak = peaks[i];
+                if (lowerPeak.frequency >= 60 && lowerPeak.frequency <= 400) {
+                    // Check if best frequency is a harmonic of this lower peak
+                    const ratio = frequency / lowerPeak.frequency;
+                    if (ratio > 1.8 && ratio < 2.2) {
+                        // Likely 2x harmonic - prefer the fundamental if it has decent correlation
+                        if (lowerPeak.correlation > bestCorrelation * 0.6) {
+                            const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES, bestCorrelation);
+                            if (fundamental > 0) {
+                                return fundamental;
+                            }
+                        }
+                    } else if (ratio > 2.8 && ratio < 3.2) {
+                        // Likely 3x harmonic
+                        if (lowerPeak.correlation > bestCorrelation * 0.5) {
+                            const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES, bestCorrelation);
+                            if (fundamental > 0) {
+                                return fundamental;
+                            }
+                        }
+                    }
                 }
             }
             
-            Logger.debug('Autocorrelation: found frequency', {
-                frequency: Math.round(frequency * 100) / 100,
-                bestCorrelation: Math.round(bestCorrelation * 1000) / 1000,
-                bestOffset: bestOffset,
-                minFreq: MIN_FREQUENCY,
-                maxFreq: MAX_FREQUENCY
-            });
+            // Always check for harmonics - this is critical for guitar strings
+            // Pass the bestCorrelation so we can compare with candidate fundamentals
+            const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES, bestCorrelation);
+            if (fundamental > 0 && fundamental !== frequency) {
+                // Only log harmonic corrections (interesting case)
+                Logger.debug('Harmonic corrected', {
+                    detected: Math.round(frequency * 100) / 100,
+                    corrected: Math.round(fundamental * 100) / 100
+                });
+                return fundamental;
+            }
+            
+            // If fundamental check rejected it, return -1
+            if (fundamental < 0) {
+                return -1;
+            }
+            
+            // Don't log every successful detection - too spammy
             return frequency;
         }
         
-        // Log why detection failed
-        Logger.debug('Autocorrelation: no frequency found', {
-            bestCorrelation: Math.round(bestCorrelation * 1000) / 1000,
-            bestOffset: bestOffset,
-            minSamples: MIN_SAMPLES,
-            maxSamples: ACTUAL_MAX_SAMPLES,
-            rms: Math.round(rms * 10000) / 10000,
-            foundGoodCorrelation: foundGoodCorrelation
-        });
+        // Don't log failed detections - too spammy
         return -1;
     },
 
-    findFundamentalFrequency: function(detectedFreq, correlations, sampleRate, minSamples) {
+    findFundamentalFrequency: function(detectedFreq, correlations, sampleRate, minSamples, detectedCorrelation) {
         // Check if detected frequency might be a harmonic (2x, 3x, 4x) of the fundamental
         // For guitar strings, we expect fundamentals between 82-330 Hz
         const expectedRange = { min: 60, max: 400 };
-        const harmonics = [2, 3, 4];
+        const harmonics = [2, 3, 4, 5, 6]; // Check harmonics
         
-        // If detected frequency is already in expected range, it's likely the fundamental
-        if (detectedFreq >= expectedRange.min && detectedFreq <= expectedRange.max) {
-            return detectedFreq;
+        // If frequency is way too high (like 500Hz+), it's likely noise
+        if (detectedFreq > 450) {
+            return -1; // Reject it
         }
         
-        // Check if it's a harmonic of a frequency in the expected range
+        // Always check if detected frequency might be a harmonic of a lower fundamental
+        // This is critical - guitar strings often produce strong harmonics
+        let bestFundamental = detectedFreq;
+        let bestFundamentalCorrelation = detectedCorrelation || 0;
+        
         for (const harmonic of harmonics) {
             const candidateFundamental = detectedFreq / harmonic;
             
@@ -228,40 +272,33 @@ const PitchDetector = {
             const candidateOffset = Math.round(sampleRate / candidateFundamental);
             
             if (candidateOffset >= minSamples && candidateOffset < correlations.length && correlations[candidateOffset] !== undefined) {
-                // Check if there's a strong correlation at this offset (indicating it's the fundamental)
-                const correlation = correlations[candidateOffset];
+                const candidateCorrelation = correlations[candidateOffset];
                 
-                // If correlation is strong enough, this is likely the fundamental
-                if (correlation > 0.5) { // Lowered from 0.6
-                    Logger.debug('Found fundamental frequency', {
-                        detected: detectedFreq,
-                        fundamental: candidateFundamental,
-                        harmonic: harmonic,
-                        correlation: correlation
-                    });
-                    return candidateFundamental;
+                // If the fundamental has comparable or stronger correlation, prefer it
+                // This handles the case where we detect 147Hz (D3) but 73Hz (D2) has stronger correlation
+                // We want the lower frequency (fundamental) if it has good correlation
+                if (candidateCorrelation > bestFundamentalCorrelation * 0.7) {
+                    // The fundamental has at least 70% of the detected frequency's correlation
+                    // Prefer the fundamental (lower frequency)
+                    if (candidateFundamental < bestFundamental) {
+                        bestFundamental = candidateFundamental;
+                        bestFundamentalCorrelation = candidateCorrelation;
+                    }
                 }
             }
         }
         
-        // If detected frequency is way too high, try to find the fundamental
-        // by checking if it's close to a multiple of an expected frequency
-        if (detectedFreq > expectedRange.max) {
-            for (const harmonic of harmonics) {
-                const candidate = detectedFreq / harmonic;
-                if (candidate >= expectedRange.min && candidate <= expectedRange.max) {
-                    // This is likely a harmonic, return the candidate
-                    Logger.debug('Correcting harmonic', {
-                        detected: detectedFreq,
-                        corrected: candidate,
-                        harmonic: harmonic
-                    });
-                    return candidate;
-                }
-            }
+        // If we found a better fundamental (lower frequency with good correlation), use it
+        if (bestFundamental < detectedFreq && bestFundamentalCorrelation > 0.3) {
+            return bestFundamental;
         }
         
-        // If no fundamental found, return the detected frequency (don't filter it out)
+        // If detected frequency is outside expected range, reject it
+        if (detectedFreq < expectedRange.min || detectedFreq > expectedRange.max) {
+            return -1;
+        }
+        
+        // If no better fundamental found, return the detected frequency
         return detectedFreq;
     },
 
@@ -273,12 +310,23 @@ const PitchDetector = {
         const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         
         // Calculate semitones from A4
-        const semitones = 12 * Math.log2(frequency / A4);
-        const noteNumber = Math.round(semitones) + 9; // A4 is note 9 in the 12-note scale (0-indexed from C)
+        const semitonesFromA4 = 12 * Math.log2(frequency / A4);
         
-        // Calculate octave
-        const octave = 4 + Math.floor((noteNumber + 9) / 12);
-        const noteIndex = ((noteNumber % 12) + 12) % 12;
+        // Round to nearest semitone
+        const roundedSemitones = Math.round(semitonesFromA4);
+        
+        // A4 is in octave 4, and is note 9 (0-indexed from C)
+        // A4 = 4*12 + 9 = 57 semitones from C0
+        const A4_semitonesFromC0 = 4 * 12 + 9; // 57
+        
+        // Calculate absolute note number from C0
+        const noteNumberFromC0 = A4_semitonesFromC0 + roundedSemitones;
+        
+        // Calculate octave (C0 = octave 0, C1 = octave 1, etc.)
+        const octave = Math.floor(noteNumberFromC0 / 12);
+        
+        // Calculate note index (0-11)
+        const noteIndex = ((noteNumberFromC0 % 12) + 12) % 12;
         const noteName = noteNames[noteIndex];
         
         return {
