@@ -46,3 +46,7 @@ function getFrequency(note, octave) {
 // Minimum consecutive correct answers required per note before progression
 const REQUIRED_STREAK_PER_NOTE = 20;
 
+// Pitch detection algorithm configuration
+// Options: 'autocorrelation' | 'pitchfinder-yin' | 'pitchfinder-amdf' | 'pitchfinder-macleod' | 'pitchy'
+const PITCH_DETECTION_ALGORITHM = 'autocorrelation';
+

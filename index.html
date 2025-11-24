@@ -285,6 +285,19 @@
                     </select>
                 </div>
 
+                <!-- Pitch Detection Algorithm -->
+                <div class="bg-slate-800 p-4 rounded-lg">
+                    <label class="block text-sm font-semibold text-slate-400 mb-2">Pitch Detection Algorithm</label>
+                    <select id="pitch-algorithm-select" class="w-full bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-600 focus:border-indigo-500 focus:outline-none">
+                        <option value="autocorrelation">Autocorrelation (Current)</option>
+                        <option value="pitchfinder-yin">Pitchfinder - YIN</option>
+                        <option value="pitchfinder-amdf">Pitchfinder - AMDF</option>
+                        <option value="pitchfinder-macleod">Pitchfinder - MacLeod</option>
+                        <option value="pitchy">Pitchy (McLeod)</option>
+                    </select>
+                    <p class="text-xs text-slate-500 mt-2">Switch between different pitch detection algorithms for testing. Changes take effect on next microphone start.</p>
+                </div>
+
                 <!-- Metronome Settings (only for microphone mode) -->
                 <div id="metronome-settings">
                     <label class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Metronome</label>
@@ -355,6 +368,7 @@
     <script src="audio.js"></script>
     <script src="metronome.js"></script>
     <script src="pitch-detector.js"></script>
+    <script type="module" src="pitch-detector-adapter.js"></script>
     <script src="srs.js"></script>
     <script src="app.js"></script>
 </body>

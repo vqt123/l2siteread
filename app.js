@@ -172,7 +172,7 @@ const App = {
     startMicrophone: async function() {
         if (PitchDetector.isListening) return;
         
-        const success = await PitchDetector.init();
+        const success = await PitchDetectorAdapter.init();
         if (!success) {
             alert('Failed to access microphone. Please check permissions.');
             return;
@@ -182,7 +182,7 @@ const App = {
         this.lastDetectedNote = null;
         this.lastDetectionTime = 0;
         
-        PitchDetector.startListening((note, frequency) => {
+        PitchDetectorAdapter.startListening((note, frequency) => {
             // Only process if we're not already processing
             if (this.isProcessing) return;
             
@@ -245,7 +245,7 @@ const App = {
 
     stopMicrophone: function() {
         if (PitchDetector.isListening) {
-            PitchDetector.stopListening();
+            PitchDetectorAdapter.stopListening();
             PitchDetector.cleanup();
         }
         
@@ -442,6 +442,23 @@ const App = {
             this.exportAllLogs();
         };
         
+        // Pitch detection algorithm selector
+        const pitchAlgorithmSelect = document.getElementById('pitch-algorithm-select');
+        if (pitchAlgorithmSelect) {
+            // Load saved algorithm
+            const savedAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+            pitchAlgorithmSelect.value = savedAlgorithm;
+            
+            pitchAlgorithmSelect.onchange = (e) => {
+                const algorithm = e.target.value;
+                localStorage.setItem('pitchDetectionAlgorithm', algorithm);
+                if (PitchDetectorAdapter) {
+                    PitchDetectorAdapter.setAlgorithm(algorithm);
+                    Logger.info('Pitch detection algorithm changed', { algorithm });
+                }
+            };
+        }
+        
         document.getElementById('btn-stop-mic').onclick = () => {
             this.stopMicrophone();
             // Switch back to buttons mode
@@ -549,10 +566,10 @@ const App = {
         // Stop main microphone if running
         const wasMicRunning = PitchDetector.isListening;
         if (wasMicRunning) {
-            PitchDetector.stopListening();
+            PitchDetectorAdapter.stopListening();
         }
         
-        const success = await PitchDetector.init();
+        const success = await PitchDetectorAdapter.init();
         if (!success) {
             alert('Failed to access microphone. Please check permissions.');
             // Restore microphone if it was running
@@ -681,10 +698,10 @@ const App = {
         // Stop main microphone if running
         const wasMicRunning = PitchDetector.isListening;
         if (wasMicRunning) {
-            PitchDetector.stopListening();
+            PitchDetectorAdapter.stopListening();
         }
         
-        const success = await PitchDetector.init();
+        const success = await PitchDetectorAdapter.init();
         if (!success) {
             alert('Failed to access microphone. Please check permissions.');
             return;
@@ -703,23 +720,39 @@ const App = {
         this.updateGuidedCalibrationUI();
         
         // Create detector for guided calibration
+        // For calibration, we'll use the adapter but need direct access to audio data
+        // We'll create a custom callback that processes the audio buffer
         const detector = {
-            analyser: PitchDetector.analyser,
-            dataArray: PitchDetector.dataArray,
-            audioContext: PitchDetector.audioContext,
             isRunning: true,
             animationFrame: null,
             lastDetection: null,
             detectionCount: 0,
-            detections: []
+            detections: [],
+            analyser: null,
+            dataArray: null,
+            audioContext: null
         };
+        
+        // Get audio context from adapter's current implementation
+        // For autocorrelation, we can access directly; for others, we'll use the callback
+        const currentImpl = PitchDetectorAdapter.currentImplementation;
+        if (currentImpl && currentImpl.audioContext) {
+            detector.analyser = currentImpl.analyser;
+            detector.dataArray = currentImpl.dataArray;
+            detector.audioContext = currentImpl.audioContext;
+        } else if (PitchDetector.audioContext) {
+            // Fallback to original PitchDetector
+            detector.analyser = PitchDetector.analyser;
+            detector.dataArray = PitchDetector.dataArray;
+            detector.audioContext = PitchDetector.audioContext;
+        }
         
         // Initialize detector state
         detector.currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
         detector.stringStartTime = Date.now();
         
         const detectPitch = () => {
-            if (!this.guidedCalibration.active) return;
+            if (!this.guidedCalibration.active || !detector.analyser) return;
             
             // Get current string from index (in case it changed)
             const currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
@@ -737,8 +770,20 @@ const App = {
             // Update signal strength display
             document.getElementById('cal-guided-signal-bar').style.width = signalStrength + '%';
             
-            // Detect pitch
-            const pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+            // Detect pitch - use adapter's current implementation or fallback to autocorrelation
+            let pitch = -1;
+            if (PitchDetectorAdapter && PitchDetectorAdapter.config.algorithm === 'autocorrelation' && PitchDetector.autocorrelate) {
+                pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+            } else if (currentImpl && currentImpl.detector) {
+                // For Pitchfinder implementations
+                pitch = currentImpl.detector(detector.dataArray);
+            } else if (typeof Pitchy !== 'undefined' && Pitchy.detectPitch) {
+                // For Pitchy
+                pitch = Pitchy.detectPitch(detector.dataArray, detector.audioContext.sampleRate);
+            } else if (PitchDetector.autocorrelate) {
+                // Fallback to autocorrelation
+                pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+            }
             
             // Lower signal threshold and be more lenient with detections
             const signalThreshold = 2; // Lowered from 5
