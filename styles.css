@@ -85,3 +85,28 @@ body {
     transition: width 0.5s ease;
 }
 
+/* Microphone indicator animation */
+#mic-indicator {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Beat meter styles */
+#beat-meter {
+    position: relative;
+}
+
+#beat-indicator {
+    z-index: 10;
+    transition: left 0.05s linear, background-color 0.1s ease;
+}
+
+#acceptance-zone {
+    z-index: 5;
+    pointer-events: none;
+}
+

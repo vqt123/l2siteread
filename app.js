@@ -7,11 +7,18 @@ const App = {
     sequenceIndex: 0,
     isProcessing: false,
     lastNoteTime: 0, // Timestamp when current note was displayed/activated
+    lastDetectedNote: null, // For debouncing microphone input
+    lastDetectionTime: 0, // Timestamp of last detection
+    metronomeEnabled: false,
+    nextBeatTime: 0, // When the next beat should occur
+    beatMeterAnimation: null, // Animation frame ID for beat meter
     settings: {
         clefs: ['treble'],
         keys: ['C'],
         mode: 'buttons',
-        batchSize: 8
+        batchSize: 8,
+        metronomeEnabled: false,
+        tempo: 120
     },
 
     init: function() {
@@ -70,10 +77,21 @@ const App = {
             });
             document.querySelector(`input[name="input_mode"][value="${this.settings.mode}"]`).checked = true;
             document.getElementById('batch-size').value = this.settings.batchSize;
+            
+            // Metronome settings
+            if (this.settings.metronomeEnabled !== undefined) {
+                document.getElementById('metronome-enabled').checked = this.settings.metronomeEnabled;
+            }
+            if (this.settings.tempo) {
+                document.getElementById('tempo-slider').value = this.settings.tempo;
+                document.getElementById('tempo-display').textContent = this.settings.tempo;
+            }
         } else {
             document.getElementById('clef-treble').checked = true;
             document.querySelector(`input[name="input_mode"][value="buttons"]`).checked = true;
             this.settings.batchSize = 8;
+            this.settings.metronomeEnabled = false;
+            this.settings.tempo = 120;
         }
     },
 
@@ -88,9 +106,16 @@ const App = {
 
         const mode = document.querySelector('input[name="input_mode"]:checked').value;
         const batchSize = parseInt(document.getElementById('batch-size').value);
+        const metronomeEnabled = document.getElementById('metronome-enabled').checked;
+        const tempo = parseInt(document.getElementById('tempo-slider').value);
 
-        this.settings = { clefs, keys, mode, batchSize };
+        this.settings = { clefs, keys, mode, batchSize, metronomeEnabled, tempo };
         localStorage.setItem('sightread_settings_v2', JSON.stringify(this.settings));
+        
+        // Update metronome if running
+        if (this.settings.mode === 'microphone' && metronomeEnabled && Metronome.isRunning) {
+            Metronome.setTempo(tempo);
+        }
         
         this.updateUIForMode();
         this.nextRound(); 
@@ -99,13 +124,253 @@ const App = {
     updateUIForMode: function() {
         const pianoWrap = document.getElementById('piano-wrapper');
         const btnWrap = document.getElementById('buttons-wrapper');
+        const micStatus = document.getElementById('mic-status');
         
         if (this.settings.mode === 'piano') {
             pianoWrap.classList.remove('hidden');
             btnWrap.classList.add('hidden');
+            micStatus.classList.add('hidden');
+            this.stopMicrophone();
+        } else if (this.settings.mode === 'microphone') {
+            pianoWrap.classList.add('hidden');
+            btnWrap.classList.add('hidden');
+            micStatus.classList.remove('hidden');
+            // Require metronome for microphone mode
+            if (!this.settings.metronomeEnabled) {
+                alert('Metronome is required for microphone mode. Please enable it in settings.');
+                // Auto-enable metronome
+                this.settings.metronomeEnabled = true;
+                document.getElementById('metronome-enabled').checked = true;
+            }
+            if (this.settings.metronomeEnabled) {
+                this.startMicrophone();
+            }
         } else {
             pianoWrap.classList.add('hidden');
             btnWrap.classList.remove('hidden');
+            micStatus.classList.add('hidden');
+            this.stopMicrophone();
+        }
+    },
+
+    startMicrophone: async function() {
+        if (PitchDetector.isListening) return;
+        
+        const success = await PitchDetector.init();
+        if (!success) {
+            alert('Failed to access microphone. Please check permissions.');
+            return;
+        }
+        
+        // Reset detection state
+        this.lastDetectedNote = null;
+        this.lastDetectionTime = 0;
+        
+        PitchDetector.startListening((note, frequency) => {
+            // Only process if we're not already processing
+            if (this.isProcessing) return;
+            
+            const now = Date.now();
+            const noteKey = `${note.note}${note.octave}`;
+            
+            // Debounce: ignore if same note detected within 300ms
+            if (this.lastDetectedNote === noteKey && (now - this.lastDetectionTime) < 300) {
+                return;
+            }
+            
+            // If metronome is enabled, only accept notes near the beat
+            if (this.settings.metronomeEnabled && Metronome.isRunning) {
+                const beatInterval = (60 / this.settings.tempo) * 1000;
+                const timeUntilNextBeat = this.nextBeatTime - now;
+                const beatWindow = beatInterval * 0.4; // 40% of beat interval window (allows some flexibility)
+                
+                // Check if we're within the beat window (before the next beat)
+                // Allow notes slightly before the beat (up to 40% of interval) or right at the beat
+                const isNearBeat = timeUntilNextBeat >= -beatWindow && timeUntilNextBeat <= beatWindow;
+                
+                if (!isNearBeat) {
+                    Logger.debug('Note detected but not on beat', { 
+                        note: noteKey, 
+                        timeUntilNextBeat,
+                        beatWindow,
+                        nextBeatTime: this.nextBeatTime,
+                        now
+                    });
+                    return; // Ignore notes not on the beat
+                }
+            }
+            
+            Logger.debug('Note detected from microphone', { note, frequency });
+            
+            // Convert detected note to input format
+            const noteName = note.note.replace('#', '');
+            const accidental = note.note.includes('#') ? '#' : null;
+            
+            // Update detection state
+            this.lastDetectedNote = noteKey;
+            this.lastDetectionTime = now;
+            
+            // Handle input with detected note
+            this.handleInput(noteName, note.octave, accidental);
+        });
+        
+        // Start metronome if enabled
+        if (this.settings.metronomeEnabled) {
+            this.startMetronome();
+        }
+        
+        // Update UI indicator
+        const indicator = document.getElementById('mic-indicator');
+        if (indicator) {
+            indicator.classList.remove('bg-red-500');
+            indicator.classList.add('bg-green-500');
+        }
+    },
+
+    stopMicrophone: function() {
+        if (PitchDetector.isListening) {
+            PitchDetector.stopListening();
+            PitchDetector.cleanup();
+        }
+        
+        this.stopMetronome();
+        
+        // Update UI indicator
+        const indicator = document.getElementById('mic-indicator');
+        if (indicator) {
+            indicator.classList.remove('bg-green-500');
+            indicator.classList.add('bg-red-500');
+        }
+    },
+
+    startMetronome: function() {
+        Metronome.setTempo(this.settings.tempo);
+        const beatInterval = (60 / this.settings.tempo) * 1000;
+        this.nextBeatTime = Date.now() + beatInterval; // Set initial next beat time
+        
+        Metronome.start((beat) => {
+            // Update next beat time based on current time and interval
+            const beatInterval = (60 / this.settings.tempo) * 1000;
+            this.nextBeatTime = Date.now() + beatInterval;
+            
+            // Update visual indicator
+            this.updateMetronomeVisual(beat);
+        });
+        
+        // Initialize visual indicator
+        this.updateMetronomeVisual(0);
+        
+        // Start beat meter animation
+        this.startBeatMeter();
+    },
+
+    updateMetronomeVisual: function(currentBeat) {
+        const beats = document.querySelectorAll('.metronome-beat');
+        beats.forEach((beatEl, index) => {
+            if (index === currentBeat) {
+                // Active beat - larger and brighter
+                beatEl.classList.remove('bg-slate-600', 'w-4', 'h-4');
+                beatEl.classList.add('bg-indigo-500', 'w-6', 'h-6', 'ring-2', 'ring-indigo-400');
+            } else if (index === 0 && currentBeat === 0) {
+                // Downbeat (beat 1) - special styling
+                beatEl.classList.remove('bg-slate-600', 'w-4', 'h-4');
+                beatEl.classList.add('bg-indigo-600', 'w-6', 'h-6', 'ring-2', 'ring-indigo-400');
+            } else {
+                // Inactive beat
+                beatEl.classList.remove('bg-indigo-500', 'bg-indigo-600', 'w-6', 'h-6', 'ring-2', 'ring-indigo-400');
+                beatEl.classList.add('bg-slate-600', 'w-4', 'h-4');
+            }
+        });
+    },
+
+    stopMetronome: function() {
+        Metronome.stop();
+        // Reset visual indicator
+        const beats = document.querySelectorAll('.metronome-beat');
+        beats.forEach((beatEl) => {
+            beatEl.classList.remove('bg-indigo-500', 'bg-indigo-600', 'w-6', 'h-6', 'ring-2', 'ring-indigo-400');
+            beatEl.classList.add('bg-slate-600', 'w-4', 'h-4');
+        });
+        
+        // Stop beat meter animation
+        this.stopBeatMeter();
+    },
+
+    startBeatMeter: function() {
+        if (this.beatMeterAnimation) {
+            cancelAnimationFrame(this.beatMeterAnimation);
+        }
+        
+        const meter = document.getElementById('beat-meter');
+        const indicator = document.getElementById('beat-indicator');
+        const zone = document.getElementById('acceptance-zone');
+        
+        if (!meter || !indicator || !zone) return;
+        
+        const meterWidth = meter.offsetWidth;
+        const beatInterval = (60 / this.settings.tempo) * 1000;
+        const windowPercent = 0.4; // 40% of beat interval is the acceptance window
+        
+        // Position and size acceptance zone (centered around beat)
+        const zoneCenter = 0.5; // Center of meter
+        const zoneWidth = windowPercent;
+        const zoneLeft = (zoneCenter - zoneWidth / 2) * meterWidth;
+        const zoneWidthPx = zoneWidth * meterWidth;
+        
+        zone.style.left = zoneLeft + 'px';
+        zone.style.width = zoneWidthPx + 'px';
+        
+        let startTime = Date.now();
+        
+        const animate = () => {
+            if (!Metronome.isRunning) {
+                this.beatMeterAnimation = null;
+                return;
+            }
+            
+            const elapsed = (Date.now() - startTime) % beatInterval;
+            const progress = elapsed / beatInterval;
+            
+            // Calculate position (0 to 1, back and forth)
+            // Use sine wave for smooth back-and-forth motion
+            // Map to 0-1 range: sin gives -1 to 1, we want 0 to 1
+            const position = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5;
+            
+            // Position indicator (accounting for indicator width)
+            const indicatorWidth = 12; // 3 * 4 (w-3 = 12px)
+            const indicatorPos = position * (meterWidth - indicatorWidth);
+            indicator.style.left = indicatorPos + 'px';
+            
+            // Change indicator color based on whether it's in the green zone
+            const distanceFromCenter = Math.abs(position - zoneCenter);
+            if (distanceFromCenter < zoneWidth / 2) {
+                // In green zone
+                indicator.classList.remove('bg-indigo-500');
+                indicator.classList.add('bg-green-400', 'ring-2', 'ring-green-300');
+            } else {
+                // Outside green zone
+                indicator.classList.remove('bg-green-400', 'ring-2', 'ring-green-300');
+                indicator.classList.add('bg-indigo-500');
+            }
+            
+            this.beatMeterAnimation = requestAnimationFrame(animate);
+        };
+        
+        animate();
+    },
+
+    stopBeatMeter: function() {
+        if (this.beatMeterAnimation) {
+            cancelAnimationFrame(this.beatMeterAnimation);
+            this.beatMeterAnimation = null;
+        }
+        
+        // Reset indicator position
+        const indicator = document.getElementById('beat-indicator');
+        if (indicator) {
+            indicator.style.left = '50%';
+            indicator.classList.remove('bg-green-400', 'ring-2', 'ring-green-300');
+            indicator.classList.add('bg-indigo-500');
         }
     },
 
@@ -161,6 +426,27 @@ const App = {
             Logger.export();
         };
         
+        document.getElementById('btn-stop-mic').onclick = () => {
+            this.stopMicrophone();
+            // Switch back to buttons mode
+            document.querySelector('input[name="input_mode"][value="buttons"]').checked = true;
+            this.saveSettings();
+        };
+        
+        // Metronome tempo slider
+        const tempoSlider = document.getElementById('tempo-slider');
+        const tempoDisplay = document.getElementById('tempo-display');
+        if (tempoSlider && tempoDisplay) {
+            tempoSlider.oninput = () => {
+                tempoDisplay.textContent = tempoSlider.value;
+                // Restart meter if running
+                if (this.settings.mode === 'microphone' && Metronome.isRunning) {
+                    this.stopBeatMeter();
+                    this.startBeatMeter();
+                }
+            };
+        }
+        
         document.getElementById('piano-container').oncontextmenu = (e) => e.preventDefault();
         
         // Log app initialization
@@ -174,6 +460,7 @@ const App = {
         this.isProcessing = false;
         this.sequenceIndex = 0;
         this.currentSequence = [];
+        this.lastDetectedNote = null; // Reset detection state
 
         Logger.debug('Starting new round', {
             unlockedCount: this.srs.data.unlockedCount,
@@ -202,6 +489,11 @@ const App = {
 
         this.renderSequence();
         this.lastNoteTime = Date.now(); // Start timer for first note
+        
+        // Reset next beat time for metronome
+        if (this.settings.mode === 'microphone' && this.settings.metronomeEnabled && Metronome.isRunning) {
+            this.nextBeatTime = Date.now() + (60 / this.settings.tempo) * 1000;
+        }
     },
 
     renderSequence: function() {
@@ -266,10 +558,13 @@ const App = {
     handleInput: function(note, octave, accidental) {
         if (this.isProcessing) return;
         
-        AudioEngine.init();
-        let freqNote = note; 
-        if (accidental) freqNote += accidental;
-        AudioEngine.playTone(getFrequency(freqNote, octave));
+        // Don't play audio in microphone mode to avoid feedback
+        if (this.settings.mode !== 'microphone') {
+            AudioEngine.init();
+            let freqNote = note; 
+            if (accidental) freqNote += accidental;
+            AudioEngine.playTone(getFrequency(freqNote, octave));
+        }
 
         const targetCard = this.currentSequence[this.sequenceIndex];
         if (!targetCard) return;
@@ -304,6 +599,12 @@ const App = {
             const resultType = this.srs.recordResult(targetCard.id, true, delta);
             this.sequenceIndex++;
             this.lastNoteTime = Date.now(); // Reset timer for next note
+            
+            // Advance metronome beat when correct note is played
+            if (this.settings.metronomeEnabled && Metronome.isRunning) {
+                const beatInterval = (60 / this.settings.tempo) * 1000;
+                this.nextBeatTime = Date.now() + beatInterval;
+            }
             
             if (this.sequenceIndex >= this.currentSequence.length) {
                 // Round complete - check for progression only after successful completion
