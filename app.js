@@ -724,6 +724,59 @@ const App = {
             document.getElementById('cal-progress').classList.add('hidden');
             document.getElementById('btn-save-cal-logs').classList.add('hidden');
             document.getElementById('btn-export-cal-logs').classList.add('hidden');
+            
+            // Populate algorithm dropdown (async)
+            this.updateCalibrationAlgorithmDropdown().catch(err => {
+                Logger.error('Failed to populate calibration algorithm dropdown', { error: err.message });
+            });
+        };
+        
+        // Update calibration algorithm dropdown with available algorithms
+        this.updateCalibrationAlgorithmDropdown = async function() {
+            const select = document.getElementById('cal-pitch-algorithm-select');
+            if (!select) {
+                Logger.warn('Calibration algorithm select element not found');
+                return;
+            }
+            
+            // Get current selection (from main settings or localStorage)
+            const currentAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+            
+            // Default algorithms (always available) - match the HTML options
+            let availableAlgorithms = [
+                { value: 'autocorrelation', label: 'Autocorrelation' },
+                { value: 'pitchfinder-yin', label: 'Pitchfinder - YIN' },
+                { value: 'pitchfinder-amdf', label: 'Pitchfinder - AMDF' },
+                { value: 'pitchfinder-macleod', label: 'Pitchfinder - MacLeod' },
+                { value: 'pitchy', label: 'Pitchy (McLeod)' }
+            ];
+            
+            // Show all algorithms - don't filter based on what's loaded
+            // If user selects an unavailable algorithm, it will fall back gracefully
+            Logger.debug('Using all default algorithms for calibration dropdown');
+            
+            // Clear and populate dropdown
+            select.innerHTML = '';
+            availableAlgorithms.forEach(algo => {
+                const option = document.createElement('option');
+                option.value = algo.value;
+                option.textContent = algo.label;
+                if (algo.value === currentAlgorithm) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            // Ensure something is selected
+            if (select.selectedIndex === -1 && availableAlgorithms.length > 0) {
+                select.value = availableAlgorithms[0].value;
+            }
+            
+            Logger.info('Calibration algorithm dropdown populated', {
+                count: availableAlgorithms.length,
+                algorithms: availableAlgorithms.map(a => a.value),
+                selected: select.value
+            });
         };
         
         document.getElementById('btn-close-calibration').onclick = () => {
@@ -827,8 +880,9 @@ const App = {
                 if (!window.PitchDetectorAdapter.currentImplementation) {
                     await window.PitchDetectorAdapter.initialize();
                 }
-                // Get selected algorithm from localStorage
-                const selectedAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+                // Get selected algorithm from calibration dropdown (or fallback to localStorage/main settings)
+                const calSelect = document.getElementById('cal-pitch-algorithm-select');
+                const selectedAlgorithm = calSelect ? calSelect.value : (localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation');
                 window.PitchDetectorAdapter.setAlgorithm(selectedAlgorithm);
                 detector = window.PitchDetectorAdapter;
                 useAdapter = true;
@@ -862,12 +916,42 @@ const App = {
         document.getElementById('btn-start-calibration').textContent = 'Stop Calibration';
         document.getElementById('cal-history').innerHTML = '<div class="text-xs text-slate-500 text-center">No detections yet</div>';
         
+        // Disable algorithm selector during calibration
+        const calSelect = document.getElementById('cal-pitch-algorithm-select');
+        if (calSelect) {
+            calSelect.disabled = true;
+        }
+        
         // Get audio context and analyser from the detector (adapter or direct)
         const currentImpl = useAdapter ? detector.currentImplementation : detector;
         const analyser = currentImpl.analyser;
         const dataArray = currentImpl.dataArray;
         const audioContext = currentImpl.audioContext;
         const sampleRate = audioContext ? audioContext.sampleRate : 44100;
+        
+        Logger.info('Calibration detector initialized', {
+            useAdapter,
+            hasAnalyser: !!analyser,
+            hasDataArray: !!dataArray,
+            dataArrayLength: dataArray?.length || 0,
+            sampleRate,
+            algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation'
+        });
+        
+        if (!analyser || !dataArray) {
+            Logger.error('Calibration failed: missing analyser or dataArray', {
+                hasAnalyser: !!analyser,
+                hasDataArray: !!dataArray
+            });
+            alert('Failed to initialize calibration: missing audio analyser. Please try again.');
+            this.isCalibrating = false;
+            // Re-enable algorithm selector
+            const calSelect = document.getElementById('cal-pitch-algorithm-select');
+            if (calSelect) {
+                calSelect.disabled = false;
+            }
+            return;
+        }
         
         // Create separate detector for calibration (doesn't interfere with main app)
         const calibrationDetector = {
@@ -881,8 +965,15 @@ const App = {
             currentImpl: currentImpl
         };
         
+        let lastLogTime = Date.now();
+        
         const detectPitch = () => {
             if (!this.isCalibrating) return;
+            
+            if (!calibrationDetector.analyser || !calibrationDetector.dataArray) {
+                Logger.error('Calibration: analyser or dataArray missing during detection');
+                return;
+            }
             
             calibrationDetector.analyser.getFloatTimeDomainData(calibrationDetector.dataArray);
             
@@ -894,20 +985,60 @@ const App = {
             const rms = Math.sqrt(sum / calibrationDetector.dataArray.length);
             const signalStrength = Math.min(100, (rms * 1000)); // Scale to 0-100
             
+            // Log signal strength occasionally for debugging
+            const now = Date.now();
+            if (now - lastLogTime > 2000) {
+                Logger.debug('Calibration signal check', {
+                    rms: rms.toFixed(6),
+                    signalStrength: signalStrength.toFixed(2),
+                    dataArrayLength: calibrationDetector.dataArray.length,
+                    hasAnalyser: !!calibrationDetector.analyser
+                });
+                lastLogTime = now;
+            }
+            
             // Update signal strength bar
             document.getElementById('cal-signal-bar').style.width = signalStrength + '%';
             
             // Detect pitch using the selected algorithm
             let pitch = -1;
-            if (useAdapter && calibrationDetector.currentImpl && calibrationDetector.currentImpl.detector) {
-                // Use adapter's detector function (for pitchfinder implementations)
-                pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
+            if (useAdapter && calibrationDetector.currentImpl) {
+                // Check if it's autocorrelation (needs sampleRate) or pitchfinder (just buffer)
+                const isAutocorrelation = detector.config?.algorithm === 'autocorrelation';
+                
+                if (isAutocorrelation && calibrationDetector.currentImpl.detector) {
+                    // Autocorrelation needs both buffer and sampleRate
+                    try {
+                        pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray, sampleRate);
+                    } catch (e) {
+                        Logger.warn('Error calling autocorrelation detector', { error: e.message });
+                    }
+                } else if (calibrationDetector.currentImpl.detector) {
+                    // Pitchfinder algorithms just need the buffer
+                    try {
+                        pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
+                    } catch (e) {
+                        Logger.warn('Error calling adapter detector', { error: e.message });
+                    }
+                }
             } else if (PitchDetector.autocorrelate) {
                 // Fallback to autocorrelation
                 pitch = PitchDetector.autocorrelate(calibrationDetector.dataArray, sampleRate);
             }
             
-            if (pitch > 0 && signalStrength > 5) { // Minimum signal threshold
+            // Log pitch detection attempts occasionally for debugging
+            if (now - lastLogTime > 2000) {
+                Logger.debug('Calibration pitch detection', {
+                    pitch: pitch > 0 ? pitch.toFixed(2) : 'none',
+                    signalStrength: signalStrength.toFixed(2),
+                    algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation',
+                    useAdapter,
+                    hasDetector: useAdapter ? !!calibrationDetector.currentImpl?.detector : false
+                });
+            }
+            
+            // Lower threshold to 2 (same as guided calibration)
+            if (pitch > 0 && signalStrength > 2) { // Minimum signal threshold
                 const note = PitchDetector.frequencyToNote(pitch);
                 
                 if (!note) return; // Invalid note
@@ -942,9 +1073,14 @@ const App = {
                     document.getElementById('cal-history').innerHTML = historyHtml || '<div class="text-xs text-slate-500 text-center">No detections yet</div>';
                 }
             } else {
-                // No detection
-                if (signalStrength < 5) {
+                // No detection - show why
+                if (signalStrength < 2) {
                     document.getElementById('cal-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+                    document.getElementById('cal-frequency').textContent = '0.0';
+                    document.getElementById('cal-octave').textContent = '--';
+                } else if (pitch <= 0) {
+                    // Signal detected but no pitch
+                    document.getElementById('cal-detected-note').innerHTML = '<span class="text-yellow-400">No pitch</span>';
                     document.getElementById('cal-frequency').textContent = '0.0';
                     document.getElementById('cal-octave').textContent = '--';
                 }
@@ -976,6 +1112,12 @@ const App = {
         document.getElementById('btn-start-calibration').textContent = 'Start Calibration';
         document.getElementById('cal-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
         document.getElementById('cal-frequency').textContent = '0.0';
+        
+        // Re-enable algorithm selector
+        const calSelect = document.getElementById('cal-pitch-algorithm-select');
+        if (calSelect) {
+            calSelect.disabled = false;
+        }
         document.getElementById('cal-octave').textContent = '--';
         document.getElementById('cal-signal-bar').style.width = '0%';
         
@@ -1005,8 +1147,9 @@ const App = {
                 if (!window.PitchDetectorAdapter.currentImplementation) {
                     await window.PitchDetectorAdapter.initialize();
                 }
-                // Get selected algorithm from localStorage
-                const selectedAlgorithm = localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation';
+                // Get selected algorithm from calibration dropdown (or fallback to localStorage/main settings)
+                const calSelect = document.getElementById('cal-pitch-algorithm-select');
+                const selectedAlgorithm = calSelect ? calSelect.value : (localStorage.getItem('pitchDetectionAlgorithm') || 'autocorrelation');
                 window.PitchDetectorAdapter.setAlgorithm(selectedAlgorithm);
                 detector = window.PitchDetectorAdapter;
                 useAdapter = true;
@@ -1026,6 +1169,47 @@ const App = {
             return;
         }
         
+        // Get audio context and analyser from the detector (adapter or direct)
+        // IMPORTANT: Access these AFTER init() has completed successfully
+        const currentImpl = useAdapter ? detector.currentImplementation : detector;
+        
+        Logger.info('Guided calibration: checking detector state after init', {
+            useAdapter,
+            hasCurrentImpl: !!currentImpl,
+            currentImplType: currentImpl ? typeof currentImpl : 'null',
+            hasAnalyser: currentImpl ? !!currentImpl.analyser : false,
+            hasDataArray: currentImpl ? !!currentImpl.dataArray : false,
+            hasAudioContext: currentImpl ? !!currentImpl.audioContext : false,
+            algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation'
+        });
+        
+        if (!currentImpl) {
+            Logger.error('Guided calibration failed: currentImplementation is null');
+            alert('Failed to initialize guided calibration: no detector implementation available. Please try again.');
+            return;
+        }
+        
+        const analyser = currentImpl.analyser;
+        const dataArray = currentImpl.dataArray;
+        const audioContext = currentImpl.audioContext;
+        const sampleRate = audioContext ? audioContext.sampleRate : 44100;
+        
+        if (!analyser || !dataArray) {
+            Logger.error('Guided calibration failed: missing analyser or dataArray', {
+                hasAnalyser: !!analyser,
+                hasDataArray: !!dataArray,
+                hasAudioContext: !!audioContext,
+                currentImplKeys: currentImpl ? Object.keys(currentImpl) : []
+            });
+            alert('Failed to initialize guided calibration: missing audio analyser. The microphone may not be properly initialized. Please try again.');
+            // Re-enable algorithm selector
+            const calSelect = document.getElementById('cal-pitch-algorithm-select');
+            if (calSelect) {
+                calSelect.disabled = false;
+            }
+            return;
+        }
+        
         this.guidedCalibration.active = true;
         this.guidedCalibration.currentStringIndex = 0;
         this.guidedCalibration.logs = [];
@@ -1038,12 +1222,20 @@ const App = {
         document.getElementById('btn-export-cal-logs').classList.add('hidden'); // Hide until stopped
         this.updateGuidedCalibrationUI();
         
-        // Get audio context and analyser from the detector (adapter or direct)
-        const currentImpl = useAdapter ? detector.currentImplementation : detector;
-        const analyser = currentImpl.analyser;
-        const dataArray = currentImpl.dataArray;
-        const audioContext = currentImpl.audioContext;
-        const sampleRate = audioContext ? audioContext.sampleRate : 44100;
+        // Disable algorithm selector during guided calibration
+        const calSelect = document.getElementById('cal-pitch-algorithm-select');
+        if (calSelect) {
+            calSelect.disabled = true;
+        }
+        
+        Logger.info('Guided calibration detector initialized successfully', {
+            useAdapter,
+            hasAnalyser: !!analyser,
+            hasDataArray: !!dataArray,
+            dataArrayLength: dataArray?.length || 0,
+            sampleRate,
+            algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation'
+        });
         
         // Create detector for guided calibration
         const calibrationDetector = {
@@ -1064,8 +1256,15 @@ const App = {
         calibrationDetector.currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
         calibrationDetector.stringStartTime = Date.now();
         
+        let lastLogTime = Date.now();
+        
         const detectPitch = () => {
             if (!this.guidedCalibration.active || !calibrationDetector.analyser) return;
+            
+            if (!calibrationDetector.analyser || !calibrationDetector.dataArray) {
+                Logger.error('Guided calibration: analyser or dataArray missing during detection');
+                return;
+            }
             
             // Get current string from index (in case it changed)
             const currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
@@ -1080,17 +1279,56 @@ const App = {
             const rms = Math.sqrt(sum / calibrationDetector.dataArray.length);
             const signalStrength = Math.min(100, (rms * 1000));
             
+            // Log signal strength occasionally for debugging
+            const now = Date.now();
+            if (now - lastLogTime > 2000) {
+                Logger.debug('Guided calibration signal check', {
+                    rms: rms.toFixed(6),
+                    signalStrength: signalStrength.toFixed(2),
+                    dataArrayLength: calibrationDetector.dataArray.length,
+                    hasAnalyser: !!calibrationDetector.analyser
+                });
+                lastLogTime = now;
+            }
+            
             // Update signal strength display
             document.getElementById('cal-guided-signal-bar').style.width = signalStrength + '%';
             
             // Detect pitch using the selected algorithm
             let pitch = -1;
-            if (useAdapter && calibrationDetector.currentImpl && calibrationDetector.currentImpl.detector) {
-                // Use adapter's detector function (for pitchfinder implementations)
-                pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
+            if (useAdapter && calibrationDetector.currentImpl) {
+                // Check if it's autocorrelation (needs sampleRate) or pitchfinder (just buffer)
+                const isAutocorrelation = detector.config?.algorithm === 'autocorrelation';
+                
+                if (isAutocorrelation && calibrationDetector.currentImpl.detector) {
+                    // Autocorrelation needs both buffer and sampleRate
+                    try {
+                        pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray, sampleRate);
+                    } catch (e) {
+                        Logger.warn('Error calling autocorrelation detector in guided calibration', { error: e.message });
+                    }
+                } else if (calibrationDetector.currentImpl.detector) {
+                    // Pitchfinder algorithms just need the buffer
+                    try {
+                        pitch = calibrationDetector.currentImpl.detector(calibrationDetector.dataArray);
+                    } catch (e) {
+                        Logger.warn('Error calling adapter detector in guided calibration', { error: e.message });
+                    }
+                }
             } else if (PitchDetector.autocorrelate) {
                 // Fallback to autocorrelation
                 pitch = PitchDetector.autocorrelate(calibrationDetector.dataArray, sampleRate);
+            }
+            
+            // Log pitch detection attempts occasionally for debugging
+            if (now - lastLogTime > 2000) {
+                Logger.debug('Guided calibration pitch detection', {
+                    pitch: pitch > 0 ? pitch.toFixed(2) : 'none',
+                    signalStrength: signalStrength.toFixed(2),
+                    algorithm: useAdapter ? (detector.config?.algorithm || 'unknown') : 'autocorrelation',
+                    useAdapter,
+                    hasDetector: useAdapter ? !!calibrationDetector.currentImpl?.detector : false
+                });
             }
             
             // Lower signal threshold and be more lenient with detections
@@ -1283,6 +1521,12 @@ const App = {
         document.getElementById('cal-guided-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
         document.getElementById('cal-guided-frequency').textContent = '0.0';
         document.getElementById('cal-guided-signal-bar').style.width = '0%';
+        
+        // Re-enable algorithm selector
+        const calSelect = document.getElementById('cal-pitch-algorithm-select');
+        if (calSelect) {
+            calSelect.disabled = false;
+        }
     },
 
     calculateAccuracy: function(detections, expectedString) {

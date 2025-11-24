@@ -125,6 +125,19 @@
             <h2 class="text-2xl font-bold mb-4">Microphone Calibration</h2>
             
             <div class="space-y-6">
+                <!-- Pitch Detection Algorithm Selector -->
+                <div class="bg-slate-900 rounded-lg p-4">
+                    <label class="block text-sm font-semibold text-slate-400 mb-2">Pitch Detection Algorithm</label>
+                    <select id="cal-pitch-algorithm-select" class="w-full bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-600 focus:border-indigo-500 focus:outline-none">
+                        <option value="autocorrelation">Autocorrelation</option>
+                        <option value="pitchfinder-yin">Pitchfinder - YIN</option>
+                        <option value="pitchfinder-amdf">Pitchfinder - AMDF</option>
+                        <option value="pitchfinder-macleod">Pitchfinder - MacLeod</option>
+                        <option value="pitchy">Pitchy (McLeod)</option>
+                    </select>
+                    <p class="text-xs text-slate-500 mt-2">Select the pitch detection algorithm to use for calibration. Changes take effect when you start calibration.</p>
+                </div>
+                
                 <!-- Guided Calibration Mode -->
                 <div id="guided-calibration" class="bg-slate-900 rounded-lg p-4 space-y-4">
                     <div>

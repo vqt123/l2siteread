@@ -94,6 +94,22 @@ const PitchDetectorAdapter = {
             },
             getSampleRate: () => {
                 return PitchDetector.audioContext ? PitchDetector.audioContext.sampleRate : 44100;
+            },
+            // Expose properties from PitchDetector for calibration mode
+            get analyser() {
+                return PitchDetector.analyser;
+            },
+            get dataArray() {
+                return PitchDetector.dataArray;
+            },
+            get audioContext() {
+                return PitchDetector.audioContext;
+            },
+            get detector() {
+                // For pitchfinder compatibility - return autocorrelate function
+                return (buffer, sampleRate) => {
+                    return PitchDetector.autocorrelate ? PitchDetector.autocorrelate(buffer, sampleRate) : -1;
+                };
             }
         };
     },
