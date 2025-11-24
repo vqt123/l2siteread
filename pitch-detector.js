@@ -83,54 +83,186 @@ const PitchDetector = {
     },
 
     autocorrelate: function(buffer, sampleRate) {
-        const MIN_SAMPLES = 0;
-        const GOOD_ENOUGH_CORRELATION = 0.9;
+        const MIN_FREQUENCY = 60; // Minimum frequency to detect (Hz) - helps avoid harmonics
+        const MAX_FREQUENCY = 2000; // Maximum frequency to detect (Hz)
+        const MIN_SAMPLES = Math.floor(sampleRate / MAX_FREQUENCY); // Minimum offset for max frequency
+        const MAX_SAMPLES = Math.floor(sampleRate / MIN_FREQUENCY); // Maximum offset for min frequency
+        const GOOD_ENOUGH_CORRELATION = 0.60; // Lowered significantly for better detection
         const SIZE = buffer.length;
-        const MAX_SAMPLES = Math.floor(SIZE / 2);
+        const ACTUAL_MAX_SAMPLES = Math.min(MAX_SAMPLES, Math.floor(SIZE / 2));
         
         let bestOffset = -1;
         let bestCorrelation = 0;
         let rms = 0;
         let foundGoodCorrelation = false;
-        const correlations = new Array(MAX_SAMPLES);
+        const correlations = new Array(ACTUAL_MAX_SAMPLES);
 
+        // Calculate RMS for signal strength
         for (let i = 0; i < SIZE; i++) {
             const val = buffer[i];
             rms += val * val;
         }
         rms = Math.sqrt(rms / SIZE);
         
-        if (rms < 0.01) return -1; // Not enough signal
+        if (rms < 0.005) {
+            Logger.debug('Autocorrelation: insufficient signal', { rms: Math.round(rms * 10000) / 10000 });
+            return -1; // Lowered threshold - not enough signal
+        }
+
+        // Normalize buffer to improve correlation
+        let maxVal = 0;
+        for (let i = 0; i < SIZE; i++) {
+            if (Math.abs(buffer[i]) > maxVal) {
+                maxVal = Math.abs(buffer[i]);
+            }
+        }
+        if (maxVal === 0) return -1;
+        
+        const normalizedBuffer = new Float32Array(SIZE);
+        for (let i = 0; i < SIZE; i++) {
+            normalizedBuffer[i] = buffer[i] / maxVal;
+        }
 
         let lastCorrelation = 1;
-        for (let offset = MIN_SAMPLES; offset < MAX_SAMPLES; offset++) {
+        for (let offset = MIN_SAMPLES; offset < ACTUAL_MAX_SAMPLES; offset++) {
             let correlation = 0;
+            let count = 0;
 
-            for (let i = 0; i < MAX_SAMPLES; i++) {
-                correlation += Math.abs((buffer[i] - buffer[i + offset]));
+            // Use normalized buffer and calculate correlation more carefully
+            for (let i = 0; i < SIZE - offset; i++) {
+                correlation += normalizedBuffer[i] * normalizedBuffer[i + offset];
+                count++;
             }
-            correlation = 1 - (correlation / MAX_SAMPLES);
-            correlations[offset] = correlation; // Store it for later
+            
+            if (count > 0) {
+                correlation = correlation / count;
+            }
+            
+            correlations[offset] = correlation;
 
+            // Track best correlation regardless of threshold
+            if (correlation > bestCorrelation) {
+                bestCorrelation = correlation;
+                bestOffset = offset;
+            }
+            
             if (correlation > GOOD_ENOUGH_CORRELATION && correlation > lastCorrelation) {
                 foundGoodCorrelation = true;
-                if (correlation > bestCorrelation) {
-                    bestCorrelation = correlation;
-                    bestOffset = offset;
+            } else if (foundGoodCorrelation && correlation < bestCorrelation * 0.9) {
+                // Found peak, now interpolate for better accuracy
+                if (bestOffset > 0 && bestOffset < ACTUAL_MAX_SAMPLES - 1 && bestOffset > MIN_SAMPLES) {
+                    const shift = (correlations[bestOffset + 1] - correlations[bestOffset - 1]) / 
+                                  (2 * correlations[bestOffset]);
+                    const frequency = sampleRate / (bestOffset + shift);
+                    
+                    // Check if this is likely a harmonic (2x, 3x, etc. of a lower frequency)
+                    const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES);
+                    if (fundamental > 0) {
+                        return fundamental;
+                    }
                 }
-            } else if (foundGoodCorrelation) {
-                // Short-circuit - we found a good correlation, then a bad one, so we'd just be seeing copies from here.
-                // Now we need to find the best correlation point and interpolate it.
-                const shift = (correlations[bestOffset + 1] - correlations[bestOffset - 1]) / correlations[bestOffset];
-                return sampleRate / (bestOffset + (8 * shift));
             }
             lastCorrelation = correlation;
         }
         
-        if (bestCorrelation > 0.01) {
-            return sampleRate / bestOffset;
+        // If we found any correlation, use it (even if below threshold)
+        // This helps catch weak signals
+        if (bestCorrelation > 0.001 && bestOffset > 0 && bestOffset >= MIN_SAMPLES) {
+            const frequency = sampleRate / bestOffset;
+            
+            // Only check harmonics if correlation is decent
+            if (bestCorrelation > 0.3) {
+                const fundamental = this.findFundamentalFrequency(frequency, correlations, sampleRate, MIN_SAMPLES);
+                if (fundamental > 0 && fundamental !== frequency) {
+                    Logger.debug('Autocorrelation: found frequency (corrected harmonic)', {
+                        frequency: Math.round(frequency * 100) / 100,
+                        fundamental: Math.round(fundamental * 100) / 100,
+                        bestCorrelation: Math.round(bestCorrelation * 1000) / 1000,
+                        bestOffset: bestOffset
+                    });
+                    return fundamental;
+                }
+            }
+            
+            Logger.debug('Autocorrelation: found frequency', {
+                frequency: Math.round(frequency * 100) / 100,
+                bestCorrelation: Math.round(bestCorrelation * 1000) / 1000,
+                bestOffset: bestOffset,
+                minFreq: MIN_FREQUENCY,
+                maxFreq: MAX_FREQUENCY
+            });
+            return frequency;
         }
+        
+        // Log why detection failed
+        Logger.debug('Autocorrelation: no frequency found', {
+            bestCorrelation: Math.round(bestCorrelation * 1000) / 1000,
+            bestOffset: bestOffset,
+            minSamples: MIN_SAMPLES,
+            maxSamples: ACTUAL_MAX_SAMPLES,
+            rms: Math.round(rms * 10000) / 10000,
+            foundGoodCorrelation: foundGoodCorrelation
+        });
         return -1;
+    },
+
+    findFundamentalFrequency: function(detectedFreq, correlations, sampleRate, minSamples) {
+        // Check if detected frequency might be a harmonic (2x, 3x, 4x) of the fundamental
+        // For guitar strings, we expect fundamentals between 82-330 Hz
+        const expectedRange = { min: 60, max: 400 };
+        const harmonics = [2, 3, 4];
+        
+        // If detected frequency is already in expected range, it's likely the fundamental
+        if (detectedFreq >= expectedRange.min && detectedFreq <= expectedRange.max) {
+            return detectedFreq;
+        }
+        
+        // Check if it's a harmonic of a frequency in the expected range
+        for (const harmonic of harmonics) {
+            const candidateFundamental = detectedFreq / harmonic;
+            
+            // Check if candidate is in valid range
+            if (candidateFundamental < expectedRange.min || candidateFundamental > expectedRange.max) continue;
+            
+            // Calculate what offset would correspond to this fundamental
+            const candidateOffset = Math.round(sampleRate / candidateFundamental);
+            
+            if (candidateOffset >= minSamples && candidateOffset < correlations.length && correlations[candidateOffset] !== undefined) {
+                // Check if there's a strong correlation at this offset (indicating it's the fundamental)
+                const correlation = correlations[candidateOffset];
+                
+                // If correlation is strong enough, this is likely the fundamental
+                if (correlation > 0.5) { // Lowered from 0.6
+                    Logger.debug('Found fundamental frequency', {
+                        detected: detectedFreq,
+                        fundamental: candidateFundamental,
+                        harmonic: harmonic,
+                        correlation: correlation
+                    });
+                    return candidateFundamental;
+                }
+            }
+        }
+        
+        // If detected frequency is way too high, try to find the fundamental
+        // by checking if it's close to a multiple of an expected frequency
+        if (detectedFreq > expectedRange.max) {
+            for (const harmonic of harmonics) {
+                const candidate = detectedFreq / harmonic;
+                if (candidate >= expectedRange.min && candidate <= expectedRange.max) {
+                    // This is likely a harmonic, return the candidate
+                    Logger.debug('Correcting harmonic', {
+                        detected: detectedFreq,
+                        corrected: candidate,
+                        harmonic: harmonic
+                    });
+                    return candidate;
+                }
+            }
+        }
+        
+        // If no fundamental found, return the detected frequency (don't filter it out)
+        return detectedFreq;
     },
 
     frequencyToNote: function(frequency) {

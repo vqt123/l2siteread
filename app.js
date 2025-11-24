@@ -12,6 +12,21 @@ const App = {
     metronomeEnabled: false,
     nextBeatTime: 0, // When the next beat should occur
     beatMeterAnimation: null, // Animation frame ID for beat meter
+    isCalibrating: false, // Whether calibration mode is active
+    calibrationDetector: null, // Separate pitch detector for calibration
+    guidedCalibration: {
+        active: false,
+        currentStringIndex: 0,
+        strings: [
+            { note: 'E', octave: 4, name: 'E (6th string)', expectedFreq: 82.41 },
+            { note: 'A', octave: 4, name: 'A (5th string)', expectedFreq: 110.00 },
+            { note: 'D', octave: 4, name: 'D (4th string)', expectedFreq: 146.83 },
+            { note: 'G', octave: 4, name: 'G (3rd string)', expectedFreq: 196.00 },
+            { note: 'B', octave: 4, name: 'B (2nd string)', expectedFreq: 246.94 },
+            { note: 'E', octave: 5, name: 'E (1st string)', expectedFreq: 329.63 }
+        ],
+        logs: [] // Array to store detection logs for each string
+    },
     settings: {
         clefs: ['treble'],
         keys: ['C'],
@@ -423,7 +438,7 @@ const App = {
         };
         
         document.getElementById('btn-export-logs').onclick = () => {
-            Logger.export();
+            this.exportAllLogs();
         };
         
         document.getElementById('btn-stop-mic').onclick = () => {
@@ -431,6 +446,65 @@ const App = {
             // Switch back to buttons mode
             document.querySelector('input[name="input_mode"][value="buttons"]').checked = true;
             this.saveSettings();
+        };
+        
+        // Calibration mode
+        document.getElementById('btn-calibrate-mic').onclick = () => {
+            const calModal = document.getElementById('calibration-modal');
+            calModal.classList.remove('hidden');
+            // Reset guided calibration state
+            this.guidedCalibration.active = false;
+            this.guidedCalibration.currentStringIndex = 0;
+            this.guidedCalibration.logs = [];
+            document.getElementById('guided-calibration').classList.remove('hidden');
+            document.getElementById('free-calibration').classList.add('hidden');
+            document.getElementById('cal-progress').classList.add('hidden');
+            document.getElementById('btn-save-cal-logs').classList.add('hidden');
+        };
+        
+        document.getElementById('btn-close-calibration').onclick = () => {
+            this.stopCalibration();
+            this.stopGuidedCalibration();
+            const calModal = document.getElementById('calibration-modal');
+            calModal.classList.add('hidden');
+        };
+        
+        // Also stop calibration if modal is closed by clicking outside
+        document.getElementById('calibration-modal').onclick = (e) => {
+            if (e.target.id === 'calibration-modal') {
+                this.stopCalibration();
+                this.stopGuidedCalibration();
+                e.target.classList.add('hidden');
+            }
+        };
+        
+        document.getElementById('btn-start-calibration').onclick = () => {
+            if (this.isCalibrating) {
+                this.stopCalibration();
+            } else {
+                this.startCalibration();
+            }
+        };
+        
+        document.getElementById('btn-start-guided-cal').onclick = () => {
+            if (this.guidedCalibration.active) {
+                this.stopGuidedCalibration();
+            } else {
+                this.startGuidedCalibration();
+            }
+        };
+        
+        document.getElementById('btn-skip-guided').onclick = () => {
+            document.getElementById('guided-calibration').classList.add('hidden');
+            document.getElementById('free-calibration').classList.remove('hidden');
+        };
+        
+        document.getElementById('btn-save-cal-logs').onclick = () => {
+            this.saveCalibrationLogs();
+        };
+        
+        document.getElementById('btn-next-string').onclick = () => {
+            this.advanceToNextString();
         };
         
         // Metronome tempo slider
@@ -454,6 +528,683 @@ const App = {
             unlockedCount: this.srs.data.unlockedCount,
             settings: this.settings
         });
+    },
+
+    startCalibration: async function() {
+        if (this.isCalibrating) return;
+        
+        // Stop main microphone if running
+        const wasMicRunning = PitchDetector.isListening;
+        if (wasMicRunning) {
+            PitchDetector.stopListening();
+        }
+        
+        const success = await PitchDetector.init();
+        if (!success) {
+            alert('Failed to access microphone. Please check permissions.');
+            // Restore microphone if it was running
+            if (wasMicRunning) {
+                this.startMicrophone();
+            }
+            return;
+        }
+        
+        this.isCalibrating = true;
+        const history = [];
+        
+        // Update UI
+        document.getElementById('cal-indicator').classList.remove('bg-red-500');
+        document.getElementById('cal-indicator').classList.add('bg-green-500');
+        document.getElementById('cal-status-text').textContent = 'Listening...';
+        document.getElementById('btn-start-calibration').textContent = 'Stop Calibration';
+        document.getElementById('cal-history').innerHTML = '<div class="text-xs text-slate-500 text-center">No detections yet</div>';
+        
+        // Create separate detector for calibration (doesn't interfere with main app)
+        const detector = {
+            analyser: PitchDetector.analyser,
+            dataArray: PitchDetector.dataArray,
+            audioContext: PitchDetector.audioContext,
+            isRunning: true,
+            animationFrame: null
+        };
+        
+        const detectPitch = () => {
+            if (!this.isCalibrating) return;
+            
+            detector.analyser.getFloatTimeDomainData(detector.dataArray);
+            
+            // Calculate signal strength (RMS)
+            let sum = 0;
+            for (let i = 0; i < detector.dataArray.length; i++) {
+                sum += detector.dataArray[i] * detector.dataArray[i];
+            }
+            const rms = Math.sqrt(sum / detector.dataArray.length);
+            const signalStrength = Math.min(100, (rms * 1000)); // Scale to 0-100
+            
+            // Update signal strength bar
+            document.getElementById('cal-signal-bar').style.width = signalStrength + '%';
+            
+            // Detect pitch
+            const pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+            
+            if (pitch > 0 && signalStrength > 5) { // Minimum signal threshold
+                const note = PitchDetector.frequencyToNote(pitch);
+                
+                if (!note) return; // Invalid note
+                
+                if (note) {
+                    // Update display
+                    const noteDisplay = note.note + note.octave;
+                    document.getElementById('cal-detected-note').innerHTML = `<span class="text-white">${noteDisplay}</span>`;
+                    document.getElementById('cal-frequency').textContent = pitch.toFixed(1);
+                    document.getElementById('cal-octave').textContent = note.octave;
+                    
+                    // Add to history
+                    const timestamp = new Date().toLocaleTimeString();
+                    history.unshift({
+                        note: noteDisplay,
+                        frequency: pitch.toFixed(1),
+                        octave: note.octave,
+                        time: timestamp
+                    });
+                    
+                    // Keep only last 10
+                    if (history.length > 10) history.pop();
+                    
+                    // Update history display
+                    const historyHtml = history.map(h => 
+                        `<div class="text-xs text-slate-300 flex justify-between">
+                            <span class="font-mono">${h.note}</span>
+                            <span class="text-slate-500">${h.frequency}Hz</span>
+                            <span class="text-slate-500">${h.time}</span>
+                        </div>`
+                    ).join('');
+                    document.getElementById('cal-history').innerHTML = historyHtml || '<div class="text-xs text-slate-500 text-center">No detections yet</div>';
+                }
+            } else {
+                // No detection
+                if (signalStrength < 5) {
+                    document.getElementById('cal-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+                    document.getElementById('cal-frequency').textContent = '0.0';
+                    document.getElementById('cal-octave').textContent = '--';
+                }
+            }
+            
+            detector.animationFrame = requestAnimationFrame(detectPitch);
+        };
+        
+        detectPitch();
+        this.calibrationDetector = detector;
+        
+        Logger.info('Calibration mode started');
+    },
+
+    stopCalibration: function() {
+        this.isCalibrating = false;
+        
+        if (this.calibrationDetector && this.calibrationDetector.animationFrame) {
+            cancelAnimationFrame(this.calibrationDetector.animationFrame);
+        }
+        
+        // Clean up detector
+        this.calibrationDetector = null;
+        
+        // Update UI
+        document.getElementById('cal-indicator').classList.remove('bg-green-500');
+        document.getElementById('cal-indicator').classList.add('bg-red-500');
+        document.getElementById('cal-status-text').textContent = 'Not Listening';
+        document.getElementById('btn-start-calibration').textContent = 'Start Calibration';
+        document.getElementById('cal-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+        document.getElementById('cal-frequency').textContent = '0.0';
+        document.getElementById('cal-octave').textContent = '--';
+        document.getElementById('cal-signal-bar').style.width = '0%';
+        
+        Logger.info('Calibration mode stopped');
+    },
+
+    startGuidedCalibration: async function() {
+        if (this.guidedCalibration.active) return;
+        
+        // Stop main microphone if running
+        const wasMicRunning = PitchDetector.isListening;
+        if (wasMicRunning) {
+            PitchDetector.stopListening();
+        }
+        
+        const success = await PitchDetector.init();
+        if (!success) {
+            alert('Failed to access microphone. Please check permissions.');
+            return;
+        }
+        
+        this.guidedCalibration.active = true;
+        this.guidedCalibration.currentStringIndex = 0;
+        this.guidedCalibration.logs = [];
+        
+        // Update UI
+        document.getElementById('cal-progress').classList.remove('hidden');
+        document.getElementById('btn-start-guided-cal').textContent = 'Stop Calibration';
+        document.getElementById('btn-next-string').classList.remove('hidden');
+        this.updateGuidedCalibrationUI();
+        
+        // Create detector for guided calibration
+        const detector = {
+            analyser: PitchDetector.analyser,
+            dataArray: PitchDetector.dataArray,
+            audioContext: PitchDetector.audioContext,
+            isRunning: true,
+            animationFrame: null,
+            lastDetection: null,
+            detectionCount: 0,
+            detections: []
+        };
+        
+        // Initialize detector state
+        detector.currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+        detector.stringStartTime = Date.now();
+        
+        const detectPitch = () => {
+            if (!this.guidedCalibration.active) return;
+            
+            // Get current string from index (in case it changed)
+            const currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+            
+            detector.analyser.getFloatTimeDomainData(detector.dataArray);
+            
+            // Calculate signal strength
+            let sum = 0;
+            for (let i = 0; i < detector.dataArray.length; i++) {
+                sum += detector.dataArray[i] * detector.dataArray[i];
+            }
+            const rms = Math.sqrt(sum / detector.dataArray.length);
+            const signalStrength = Math.min(100, (rms * 1000));
+            
+            // Update signal strength display
+            document.getElementById('cal-guided-signal-bar').style.width = signalStrength + '%';
+            
+            // Detect pitch
+            const pitch = PitchDetector.autocorrelate(detector.dataArray, detector.audioContext.sampleRate);
+            
+            // Lower signal threshold and be more lenient with detections
+            const signalThreshold = 2; // Lowered from 5
+            
+            // Log detection attempts for debugging
+            if (signalStrength > signalThreshold) {
+                Logger.debug('Pitch detection attempt', {
+                    signalStrength: Math.round(signalStrength * 100) / 100,
+                    pitch: pitch > 0 ? Math.round(pitch * 100) / 100 : 'none',
+                    rms: Math.round((Math.sqrt(detector.dataArray.reduce((sum, val) => sum + val * val, 0) / detector.dataArray.length)) * 10000) / 10000,
+                    bufferLength: detector.dataArray.length,
+                    sampleRate: detector.audioContext.sampleRate
+                });
+            }
+            
+            if (pitch > 0 && signalStrength > signalThreshold) {
+                const note = PitchDetector.frequencyToNote(pitch);
+                
+                if (note) {
+                    // Update display
+                    const noteDisplay = note.note + note.octave;
+                    const match = (note.note === currentString.note && note.octave === currentString.octave);
+                    const colorClass = match ? 'text-green-400' : 'text-red-400';
+                    document.getElementById('cal-guided-detected-note').innerHTML = `<span class="${colorClass}">${noteDisplay}</span>`;
+                    document.getElementById('cal-guided-frequency').textContent = pitch.toFixed(1);
+                    
+                    const elapsed = Date.now() - (detector.stringStartTime || Date.now());
+                    
+                    // Record detection
+                    const detection = {
+                        timestamp: elapsed,
+                        detectedNote: note.note,
+                        detectedOctave: note.octave,
+                        detectedFrequency: pitch,
+                        expectedNote: currentString.note,
+                        expectedOctave: currentString.octave,
+                        expectedFrequency: currentString.expectedFreq,
+                        signalStrength: signalStrength,
+                        match: match
+                    };
+                    
+                    // Only add if it's a new detection (avoid duplicates)
+                    // But be less strict - allow same note if frequency changed significantly or enough time passed
+                    const lastDetection = detector.detections[detector.detections.length - 1];
+                    const timeSinceLastDetection = lastDetection ? (elapsed - lastDetection.timestamp) : Infinity;
+                    
+                    if (!lastDetection || 
+                        lastDetection.detectedNote !== note.note || 
+                        lastDetection.detectedOctave !== note.octave ||
+                        Math.abs(lastDetection.detectedFrequency - pitch) > 3 || // Lowered from 5
+                        timeSinceLastDetection > 500) { // Allow same note if 500ms passed
+                        detector.detections.push(detection);
+                        Logger.debug('Detection recorded', {
+                            note: noteDisplay,
+                            frequency: pitch,
+                            signalStrength: signalStrength,
+                            match: match,
+                            totalDetections: detector.detections.length
+                        });
+                    }
+                    
+                    // Count consecutive matches
+                    if (match) {
+                        detector.detectionCount++;
+                    } else {
+                        detector.detectionCount = 0; // Reset on mismatch
+                    }
+                }
+            } else {
+                // No detection - show why
+                if (signalStrength <= signalThreshold) {
+                    document.getElementById('cal-guided-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+                    document.getElementById('cal-guided-frequency').textContent = '0.0';
+                } else if (pitch <= 0) {
+                    // Pitch detection failed but signal is strong
+                    document.getElementById('cal-guided-detected-note').innerHTML = '<span class="text-yellow-400">No pitch</span>';
+                    document.getElementById('cal-guided-frequency').textContent = '0.0';
+                }
+            }
+            
+            detector.animationFrame = requestAnimationFrame(detectPitch);
+        };
+        
+        detectPitch();
+        this.calibrationDetector = detector;
+        
+        const initialString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+        Logger.info('Guided calibration started', { string: initialString.name });
+    },
+
+    advanceToNextString: function() {
+        if (!this.guidedCalibration.active || !this.calibrationDetector) return;
+        
+        const detector = this.calibrationDetector;
+        const currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+        
+        // Save log for current string (even if no matches)
+        this.guidedCalibration.logs.push({
+            string: currentString.name,
+            expected: `${currentString.note}${currentString.octave}`,
+            expectedFrequency: currentString.expectedFreq,
+            detections: [...detector.detections], // Copy array
+            bestMatch: detector.detections.length > 0 ? {
+                note: detector.detections[detector.detections.length - 1].detectedNote,
+                octave: detector.detections[detector.detections.length - 1].detectedOctave,
+                frequency: detector.detections[detector.detections.length - 1].detectedFrequency
+            } : null,
+            accuracy: this.calculateAccuracy(detector.detections, currentString),
+            totalDetections: detector.detections.length
+        });
+        
+        // Move to next string
+        this.guidedCalibration.currentStringIndex++;
+        
+        if (this.guidedCalibration.currentStringIndex >= this.guidedCalibration.strings.length) {
+            // All strings done
+            this.completeGuidedCalibration();
+            return;
+        }
+        
+        // Reset for next string
+        const nextString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+        detector.detections = [];
+        detector.detectionCount = 0;
+        detector.stringStartTime = Date.now();
+        detector.currentString = nextString;
+        
+        // Reset display
+        document.getElementById('cal-guided-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+        document.getElementById('cal-guided-frequency').textContent = '0.0';
+        document.getElementById('cal-guided-signal-bar').style.width = '0%';
+        
+        this.updateGuidedCalibrationUI();
+        
+        Logger.info('Advanced to next string', { 
+            from: currentString.name, 
+            to: nextString.name,
+            previousLog: this.guidedCalibration.logs[this.guidedCalibration.logs.length - 1]
+        });
+    },
+
+    updateGuidedCalibrationUI: function() {
+        const currentString = this.guidedCalibration.strings[this.guidedCalibration.currentStringIndex];
+        document.getElementById('cal-current-string').innerHTML = `<span class="text-indigo-400">${currentString.name}</span>`;
+        
+        // Update progress bars
+        document.querySelectorAll('.cal-string-progress').forEach((bar, index) => {
+            if (index < this.guidedCalibration.currentStringIndex) {
+                bar.classList.remove('bg-slate-700');
+                bar.classList.add('bg-green-500');
+            } else if (index === this.guidedCalibration.currentStringIndex) {
+                bar.classList.remove('bg-slate-700', 'bg-green-500');
+                bar.classList.add('bg-indigo-500');
+            } else {
+                bar.classList.remove('bg-indigo-500', 'bg-green-500');
+                bar.classList.add('bg-slate-700');
+            }
+        });
+    },
+
+    completeGuidedCalibration: function() {
+        this.guidedCalibration.active = false;
+        
+        if (this.calibrationDetector && this.calibrationDetector.animationFrame) {
+            cancelAnimationFrame(this.calibrationDetector.animationFrame);
+        }
+        
+        document.getElementById('cal-current-string').innerHTML = '<span class="text-green-400">✓ All strings calibrated!</span>';
+        document.getElementById('btn-start-guided-cal').textContent = 'Restart Calibration';
+        document.getElementById('btn-next-string').classList.add('hidden');
+        document.getElementById('btn-save-cal-logs').classList.remove('hidden');
+        
+        Logger.info('Guided calibration completed', { logs: this.guidedCalibration.logs });
+    },
+
+    stopGuidedCalibration: function() {
+        this.guidedCalibration.active = false;
+        
+        if (this.calibrationDetector && this.calibrationDetector.animationFrame) {
+            cancelAnimationFrame(this.calibrationDetector.animationFrame);
+        }
+        
+        document.getElementById('btn-start-guided-cal').textContent = 'Start Guided Calibration';
+        document.getElementById('btn-next-string').classList.add('hidden');
+        
+        // Reset display
+        document.getElementById('cal-guided-detected-note').innerHTML = '<span class="text-slate-500">--</span>';
+        document.getElementById('cal-guided-frequency').textContent = '0.0';
+        document.getElementById('cal-guided-signal-bar').style.width = '0%';
+    },
+
+    calculateAccuracy: function(detections, expectedString) {
+        if (detections.length === 0) return 0;
+        
+        let correct = 0;
+        let total = detections.length;
+        
+        detections.forEach(d => {
+            if (d.match) correct++;
+        });
+        
+        return (correct / total) * 100;
+    },
+
+    saveCalibrationLogs: function() {
+        // Process logs to add analysis
+        const processedLogs = this.guidedCalibration.logs.map((log, index) => {
+            return this.analyzeStringLog(log, this.guidedCalibration.strings[index]);
+        });
+        
+        const logData = {
+            timestamp: new Date().toISOString(),
+            calibrationType: 'Guitar String Calibration',
+            
+            // Quick summary for overview
+            quickSummary: {
+                totalStrings: this.guidedCalibration.strings.length,
+                calibratedStrings: this.guidedCalibration.logs.length,
+                averageAccuracy: this.guidedCalibration.logs.length > 0 
+                    ? Math.round(this.guidedCalibration.logs.reduce((sum, log) => sum + (log.accuracy || 0), 0) / this.guidedCalibration.logs.length * 100) / 100
+                    : 0,
+                stringsByAccuracy: processedLogs.map(l => ({
+                    string: l.string,
+                    accuracy: l.analysis.accuracy,
+                    status: l.analysis.accuracy >= 80 ? 'excellent' : 
+                           l.analysis.accuracy >= 50 ? 'good' : 
+                           l.analysis.accuracy >= 20 ? 'poor' : 'failed'
+                }))
+            },
+            
+            // Detailed analysis per string
+            strings: processedLogs,
+            
+            // Overall patterns and issues
+            patterns: this.analyzeOverallPatterns(processedLogs),
+            
+            // Full raw data (for deep analysis if needed)
+            rawData: {
+                strings: this.guidedCalibration.strings.map((s, i) => ({
+                    string: s.name,
+                    expected: `${s.note}${s.octave}`,
+                    expectedFrequency: s.expectedFreq,
+                    allDetections: this.guidedCalibration.logs[i]?.detections || []
+                }))
+            }
+        };
+        
+        const logText = JSON.stringify(logData, null, 2);
+        
+        // Create and download file
+        const blob = new Blob([logText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `guitar-calibration-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        Logger.info('Calibration logs saved');
+    },
+
+    analyzeStringLog: function(log, expectedString) {
+        if (!log || !log.detections || log.detections.length === 0) {
+            return {
+                string: expectedString.name,
+                expected: `${expectedString.note}${expectedString.octave}`,
+                expectedFrequency: expectedString.expectedFreq,
+                analysis: {
+                    accuracy: 0,
+                    totalDetections: 0,
+                    status: 'no_data'
+                }
+            };
+        }
+        
+        const detections = log.detections;
+        const totalDetections = detections.length;
+        const correctDetections = detections.filter(d => d.match).length;
+        const accuracy = (correctDetections / totalDetections) * 100;
+        
+        // Group detections by note/octave to see patterns
+        const detectionGroups = {};
+        detections.forEach(d => {
+            const key = `${d.detectedNote}${d.detectedOctave}`;
+            if (!detectionGroups[key]) {
+                detectionGroups[key] = {
+                    note: `${d.detectedNote}${d.detectedOctave}`,
+                    count: 0,
+                    frequencies: [],
+                    avgFrequency: 0,
+                    avgSignalStrength: 0
+                };
+            }
+            detectionGroups[key].count++;
+            detectionGroups[key].frequencies.push(d.detectedFrequency);
+            detectionGroups[key].avgSignalStrength += d.signalStrength;
+        });
+        
+        // Calculate averages and find most common incorrect detection
+        const groups = Object.values(detectionGroups).map(group => {
+            group.avgFrequency = group.frequencies.reduce((a, b) => a + b, 0) / group.frequencies.length;
+            group.avgSignalStrength = group.avgSignalStrength / group.count;
+            group.percentage = (group.count / totalDetections) * 100;
+            return group;
+        }).sort((a, b) => b.count - a.count);
+        
+        const mostCommon = groups[0];
+        const mostCommonIncorrect = groups.find(g => g.note !== `${expectedString.note}${expectedString.octave}`);
+        
+        // Frequency error analysis
+        const frequencyErrors = detections.map(d => ({
+            detected: d.detectedFrequency,
+            expected: expectedString.expectedFreq,
+            error: d.detectedFrequency - expectedString.expectedFreq,
+            errorPercent: ((d.detectedFrequency - expectedString.expectedFreq) / expectedString.expectedFreq) * 100,
+            isHarmonic: this.isLikelyHarmonic(d.detectedFrequency, expectedString.expectedFreq)
+        }));
+        
+        const avgFrequencyError = frequencyErrors.reduce((sum, e) => sum + Math.abs(e.error), 0) / frequencyErrors.length;
+        const avgFrequencyErrorPercent = frequencyErrors.reduce((sum, e) => sum + Math.abs(e.errorPercent), 0) / frequencyErrors.length;
+        
+        // Check for harmonic issues
+        const harmonicDetections = frequencyErrors.filter(e => e.isHarmonic).length;
+        const harmonicPercentage = (harmonicDetections / totalDetections) * 100;
+        
+        return {
+            string: expectedString.name,
+            expected: `${expectedString.note}${expectedString.octave}`,
+            expectedFrequency: expectedString.expectedFreq,
+            analysis: {
+                accuracy: Math.round(accuracy * 100) / 100,
+                totalDetections: totalDetections,
+                correctDetections: correctDetections,
+                status: accuracy >= 80 ? 'excellent' : 
+                       accuracy >= 50 ? 'good' : 
+                       accuracy >= 20 ? 'poor' : 'failed',
+                
+                // Detection patterns
+                mostCommonDetection: mostCommon ? {
+                    note: mostCommon.note,
+                    count: mostCommon.count,
+                    percentage: Math.round(mostCommon.percentage * 100) / 100,
+                    avgFrequency: Math.round(mostCommon.avgFrequency * 100) / 100,
+                    isCorrect: mostCommon.note === `${expectedString.note}${expectedString.octave}`
+                } : null,
+                
+                mostCommonError: mostCommonIncorrect ? {
+                    note: mostCommonIncorrect.note,
+                    count: mostCommonIncorrect.count,
+                    percentage: Math.round(mostCommonIncorrect.percentage * 100) / 100,
+                    avgFrequency: Math.round(mostCommonIncorrect.avgFrequency * 100) / 100,
+                    frequencyRatio: Math.round((mostCommonIncorrect.avgFrequency / expectedString.expectedFreq) * 100) / 100
+                } : null,
+                
+                // Frequency accuracy
+                frequencyAnalysis: {
+                    avgError: Math.round(avgFrequencyError * 100) / 100,
+                    avgErrorPercent: Math.round(avgFrequencyErrorPercent * 100) / 100,
+                    harmonicIssues: {
+                        count: harmonicDetections,
+                        percentage: Math.round(harmonicPercentage * 100) / 100,
+                        likelyIssue: harmonicPercentage > 50 ? 'detecting_harmonics' : null
+                    }
+                },
+                
+                // Top 5 detected notes (for pattern analysis)
+                topDetections: groups.slice(0, 5).map(g => ({
+                    note: g.note,
+                    count: g.count,
+                    percentage: Math.round(g.percentage * 100) / 100,
+                    avgFrequency: Math.round(g.avgFrequency * 100) / 100
+                }))
+            }
+        };
+    },
+
+    isLikelyHarmonic: function(detectedFreq, expectedFreq) {
+        // Check if detected frequency is close to 2x, 3x, 4x, or 0.5x of expected
+        const ratios = [2, 3, 4, 0.5, 1.5];
+        for (const ratio of ratios) {
+            const harmonicFreq = expectedFreq * ratio;
+            const error = Math.abs(detectedFreq - harmonicFreq) / expectedFreq;
+            if (error < 0.1) { // Within 10%
+                return true;
+            }
+        }
+        return false;
+    },
+
+    analyzeOverallPatterns: function(processedLogs) {
+        const patterns = {
+            commonIssues: [],
+            frequencyRangeIssues: [],
+            harmonicIssues: []
+        };
+        
+        processedLogs.forEach(log => {
+            const analysis = log.analysis;
+            
+            // Check for harmonic issues
+            if (analysis.frequencyAnalysis?.harmonicIssues?.percentage > 50) {
+                patterns.harmonicIssues.push({
+                    string: log.string,
+                    percentage: analysis.frequencyAnalysis.harmonicIssues.percentage,
+                    issue: 'Detecting harmonics instead of fundamentals'
+                });
+            }
+            
+            // Check for common wrong detections
+            if (analysis.mostCommonError) {
+                const error = analysis.mostCommonError;
+                if (error.percentage > 30) {
+                    patterns.commonIssues.push({
+                        string: log.string,
+                        expected: log.expected,
+                        mostCommonlyDetectedAs: error.note,
+                        frequency: error.avgFrequency,
+                        ratio: error.frequencyRatio,
+                        percentage: error.percentage,
+                        likelyCause: error.frequencyRatio > 1.8 && error.frequencyRatio < 2.2 ? 'octave_error' :
+                                   error.frequencyRatio > 0.4 && error.frequencyRatio < 0.6 ? 'half_octave_error' :
+                                   'frequency_detection_error'
+                    });
+                }
+            }
+            
+            // Check frequency range issues
+            if (analysis.frequencyAnalysis?.avgErrorPercent > 50) {
+                patterns.frequencyRangeIssues.push({
+                    string: log.string,
+                    expected: log.expectedFrequency,
+                    avgDetected: analysis.mostCommonDetection?.avgFrequency || 0,
+                    errorPercent: analysis.frequencyAnalysis.avgErrorPercent
+                });
+            }
+        });
+        
+        return patterns;
+    },
+
+    exportAllLogs: function() {
+        // Export both app logs and calibration data if available
+        const exportData = {
+            timestamp: new Date().toISOString(),
+            appLogs: Logger.getLogs(),
+            calibrationData: this.guidedCalibration.logs.length > 0 ? {
+                strings: this.guidedCalibration.strings,
+                logs: this.guidedCalibration.logs
+            } : null,
+            settings: {
+                mode: this.settings.mode,
+                clefs: this.settings.clefs,
+                keys: this.settings.keys,
+                metronomeEnabled: this.settings.metronomeEnabled,
+                tempo: this.settings.tempo
+            },
+            systemInfo: {
+                userAgent: navigator.userAgent,
+                sampleRate: PitchDetector.audioContext ? PitchDetector.audioContext.sampleRate : 'not initialized',
+                isListening: PitchDetector.isListening,
+                isCalibrating: this.isCalibrating,
+                guidedCalibrationActive: this.guidedCalibration.active
+            }
+        };
+        
+        const logText = JSON.stringify(exportData, null, 2);
+        
+        // Create and download file
+        const blob = new Blob([logText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sightread-debug-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        Logger.info('All logs exported');
     },
 
     nextRound: function() {
