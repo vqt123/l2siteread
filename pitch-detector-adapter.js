@@ -42,23 +42,25 @@ const PitchDetectorAdapter = {
     
     // Load all available implementations
     loadImplementations: async function() {
-        // Load autocorrelation (existing implementation)
+        // Load autocorrelation (existing implementation) - always available
         this.implementations['autocorrelation'] = await this.loadAutocorrelation();
         
-        // Load Pitchfinder implementations
+        // Load Pitchfinder implementations (only if available)
         try {
             this.implementations['pitchfinder-yin'] = await this.loadPitchfinder('YIN');
             this.implementations['pitchfinder-amdf'] = await this.loadPitchfinder('AMDF');
             this.implementations['pitchfinder-macleod'] = await this.loadPitchfinder('MacLeod');
         } catch (error) {
             Logger.warn('Pitchfinder not available', { error: error.message });
+            // Don't fail - just skip these implementations
         }
         
-        // Load Pitchy
+        // Load Pitchy (only if available)
         try {
             this.implementations['pitchy'] = await this.loadPitchy();
         } catch (error) {
             Logger.warn('Pitchy not available', { error: error.message });
+            // Don't fail - just skip this implementation
         }
     },
     
@@ -115,6 +117,17 @@ const PitchDetectorAdapter = {
             animationFrame: null,
             init: async function() {
                 try {
+                    // Check if getUserMedia is available
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        const errorMsg = 'getUserMedia is not supported. Are you using HTTPS or localhost?';
+                        Logger.error('getUserMedia not available', { 
+                            hasMediaDevices: !!navigator.mediaDevices,
+                            protocol: window.location.protocol,
+                            hostname: window.location.hostname
+                        });
+                        throw new Error(errorMsg);
+                    }
+
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: {
                             echoCancellation: false,
@@ -136,8 +149,30 @@ const PitchDetectorAdapter = {
                     
                     return true;
                 } catch (error) {
-                    Logger.error('Failed to initialize Pitchfinder', { error: error.message });
-                    return false;
+                    let errorDetails = {
+                        error: error.message,
+                        name: error.name,
+                        protocol: window.location.protocol,
+                        hostname: window.location.hostname,
+                        isSecureContext: window.isSecureContext
+                    };
+
+                    // Provide specific error messages
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                        errorDetails.userMessage = 'Microphone permission denied. Please:\n' +
+                            '1. Click the padlock icon in your browser address bar\n' +
+                            '2. Allow microphone access\n' +
+                            '3. Or check System Preferences > Security & Privacy > Microphone (macOS)';
+                    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                        errorDetails.userMessage = 'No microphone found. Please connect a microphone.';
+                    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                        errorDetails.userMessage = 'Microphone is being used by another application. Please close other apps using the microphone.';
+                    } else {
+                        errorDetails.userMessage = error.message;
+                    }
+
+                    Logger.error('Failed to initialize Pitchfinder', errorDetails);
+                    return { success: false, error: errorDetails };
                 }
             },
             startListening: function(callback) {
@@ -194,10 +229,12 @@ const PitchDetectorAdapter = {
     // Load Pitchy implementation
     loadPitchy: async function() {
         // Dynamically import pitchy
-        const { Pitchy } = await import('pitchy');
+        const pitchyModule = await import('pitchy');
+        const Pitchy = pitchyModule.default || pitchyModule;
         
         return {
             name: 'Pitchy (McLeod)',
+            pitchyDetector: Pitchy, // Store the imported module
             audioContext: null,
             analyser: null,
             microphone: null,
@@ -244,7 +281,8 @@ const PitchDetectorAdapter = {
                     if (!self.isListening) return;
                     
                     self.analyser.getFloatTimeDomainData(self.dataArray);
-                    const pitch = Pitchy.detectPitch(self.dataArray, self.audioContext.sampleRate);
+                    // Use the stored Pitchy detector
+                    const pitch = self.pitchyDetector.detectPitch(self.dataArray, self.audioContext.sampleRate);
                     
                     if (pitch && pitch > 0) {
                         // Convert frequency to note

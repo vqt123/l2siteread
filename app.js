@@ -172,9 +172,36 @@ const App = {
     startMicrophone: async function() {
         if (PitchDetector.isListening) return;
         
-        const success = await PitchDetectorAdapter.init();
-        if (!success) {
-            alert('Failed to access microphone. Please check permissions.');
+        // Check if adapter is available, fallback to direct PitchDetector
+        let detector = PitchDetector;
+        let useAdapter = false;
+        
+        if (typeof window !== 'undefined' && window.PitchDetectorAdapter) {
+            try {
+                // Initialize adapter if not already done
+                if (!window.PitchDetectorAdapter.currentImplementation) {
+                    await window.PitchDetectorAdapter.initialize();
+                }
+                detector = window.PitchDetectorAdapter;
+                useAdapter = true;
+            } catch (error) {
+                Logger.warn('Failed to initialize adapter, using direct PitchDetector', { error: error.message });
+                detector = PitchDetector;
+                useAdapter = false;
+            }
+        }
+        
+        const result = await detector.init();
+        if (!result || (typeof result === 'object' && !result.success)) {
+            const errorInfo = typeof result === 'object' && result.error ? result.error : { userMessage: 'Failed to access microphone. Please check permissions.' };
+            const message = errorInfo.userMessage || errorInfo.error || 'Failed to access microphone. Please check permissions.';
+            
+            Logger.error('Microphone access failed', errorInfo);
+            alert(message + '\n\nIf the issue persists, try:\n' +
+                '1. Using HTTPS (the dev server can be configured for this)\n' +
+                '2. Checking browser permissions (click padlock icon)\n' +
+                '3. Checking macOS System Preferences > Security & Privacy > Microphone\n' +
+                '4. Closing other apps that might be using the microphone');
             return;
         }
         
@@ -182,7 +209,7 @@ const App = {
         this.lastDetectedNote = null;
         this.lastDetectionTime = 0;
         
-        PitchDetectorAdapter.startListening((note, frequency) => {
+        detector.startListening((note, frequency) => {
             // Only process if we're not already processing
             if (this.isProcessing) return;
             
@@ -245,7 +272,11 @@ const App = {
 
     stopMicrophone: function() {
         if (PitchDetector.isListening) {
-            PitchDetectorAdapter.stopListening();
+            if (typeof window !== 'undefined' && window.PitchDetectorAdapter && window.PitchDetectorAdapter.currentImplementation) {
+                window.PitchDetectorAdapter.stopListening();
+            } else {
+                PitchDetector.stopListening();
+            }
             PitchDetector.cleanup();
         }
         
@@ -566,7 +597,11 @@ const App = {
         // Stop main microphone if running
         const wasMicRunning = PitchDetector.isListening;
         if (wasMicRunning) {
-            PitchDetectorAdapter.stopListening();
+            if (typeof window !== 'undefined' && window.PitchDetectorAdapter && window.PitchDetectorAdapter.currentImplementation) {
+                window.PitchDetectorAdapter.stopListening();
+            } else {
+                PitchDetector.stopListening();
+            }
         }
         
         const success = await PitchDetectorAdapter.init();
@@ -698,7 +733,11 @@ const App = {
         // Stop main microphone if running
         const wasMicRunning = PitchDetector.isListening;
         if (wasMicRunning) {
-            PitchDetectorAdapter.stopListening();
+            if (typeof window !== 'undefined' && window.PitchDetectorAdapter && window.PitchDetectorAdapter.currentImplementation) {
+                window.PitchDetectorAdapter.stopListening();
+            } else {
+                PitchDetector.stopListening();
+            }
         }
         
         const success = await PitchDetectorAdapter.init();

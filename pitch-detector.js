@@ -14,6 +14,28 @@ const PitchDetector = {
 
     init: async function() {
         try {
+            // Check if getUserMedia is available
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                const errorMsg = 'getUserMedia is not supported. Are you using HTTPS or localhost?';
+                Logger.error('getUserMedia not available', { 
+                    hasMediaDevices: !!navigator.mediaDevices,
+                    protocol: window.location.protocol,
+                    hostname: window.location.hostname
+                });
+                throw new Error(errorMsg);
+            }
+
+            // Check if we're in a secure context
+            if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                const errorMsg = 'Microphone access requires HTTPS or localhost. Current URL: ' + window.location.href;
+                Logger.error('Not in secure context', { 
+                    isSecureContext: window.isSecureContext,
+                    hostname: window.location.hostname,
+                    protocol: window.location.protocol
+                });
+                throw new Error(errorMsg);
+            }
+
             // Get microphone access
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
@@ -37,8 +59,30 @@ const PitchDetector = {
             Logger.info('Pitch detector initialized');
             return true;
         } catch (error) {
-            Logger.error('Failed to initialize pitch detector', { error: error.message });
-            return false;
+            let errorDetails = {
+                error: error.message,
+                name: error.name,
+                protocol: window.location.protocol,
+                hostname: window.location.hostname,
+                isSecureContext: window.isSecureContext
+            };
+
+            // Provide specific error messages
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                errorDetails.userMessage = 'Microphone permission denied. Please:\n' +
+                    '1. Click the padlock icon in your browser address bar\n' +
+                    '2. Allow microphone access\n' +
+                    '3. Or check System Preferences > Security & Privacy > Microphone (macOS)';
+            } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                errorDetails.userMessage = 'No microphone found. Please connect a microphone.';
+            } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                errorDetails.userMessage = 'Microphone is being used by another application. Please close other apps using the microphone.';
+            } else {
+                errorDetails.userMessage = error.message;
+            }
+
+            Logger.error('Failed to initialize pitch detector', errorDetails);
+            return { success: false, error: errorDetails };
         }
     },
 

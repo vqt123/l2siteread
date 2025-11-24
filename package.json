@@ -26,6 +26,7 @@
     "pitchy": "^4.1.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
     "vite": "^7.2.4"
   }
 }
